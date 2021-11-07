@@ -1,3 +1,6 @@
 #IDE miscellenea
 .idea/
 serv.iml
+
+#Enviorement
+.env
