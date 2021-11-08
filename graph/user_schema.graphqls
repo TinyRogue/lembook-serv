@@ -1,6 +1,6 @@
 type User {
-  id: ID!
-  name: String!
+  username: String!
+  identifier: String!
 }
 
 input NewUser {
@@ -19,6 +19,7 @@ input RefreshTokenInput{
 
 type Query {
   ping: String!
+  users: [User!]!
 }
 
 type Mutation {

@@ -17,7 +17,7 @@ var (
 func InitDb() {
 	log.Println("Initialising Mongo Database")
 	client, err := mongo.NewClient(options.Client().ApplyURI(
-		fmt.Sprintf("mongodb+srv://%s:<%s>@all.iysnb.mongodb.net/%s?retryWrites=true&w=majority&ssl=false&useUnifiedTopology=true&useNewUrlParser=true",
+		fmt.Sprintf("mongodb+srv://%s:%s@all.iysnb.mongodb.net/%s?retryWrites=true&w=majority",
 			os.Getenv("DB_USER"),
 			os.Getenv("DB_PASSWORD"),
 			os.Getenv("DB_NAME")),

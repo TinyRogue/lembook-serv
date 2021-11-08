@@ -2,7 +2,6 @@ package jwt
 
 import (
 	"github.com/dgrijalva/jwt-go"
-	"log"
 	"os"
 	"time"
 )
@@ -11,29 +10,37 @@ var (
 	SecretKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 )
 
-func GenerateToken(username string) (string, error) {
-	token := jwt.New(jwt.SigningMethodHS256)
+const (
+	dayInHours = 24
+	weekInDays = 7
+)
+
+func GenerateToken(username *string) (*string, error) {
+	token := jwt.New(jwt.SigningMethodHS512)
 	claims := token.Claims.(jwt.MapClaims)
-	claims["username"] = username
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+	claims["username"] = *username
+	claims["iat"] = time.Now()
+	claims["exp"] = time.Now().Add(time.Hour * dayInHours * weekInDays).Unix()
 	tokenString, err := token.SignedString(SecretKey)
 
 	//TODO: Handle error in GenerateToken request
 	if err != nil {
-		log.Fatal("Error in Generating key")
-		return "", err
+		return nil, err
 	}
-	return tokenString, nil
+	return &tokenString, nil
 }
 
-func ParseToken(tokenStr string) (string, error) {
+func ParseToken(tokenStr string) (*string, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		return SecretKey, nil
 	})
+	if err != nil {
+		return nil, err
+	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		username := claims["username"].(string)
-		return username, nil
+		return &username, nil
 	} else {
-		return "", err
+		return nil, err
 	}
 }

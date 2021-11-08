@@ -11,7 +11,6 @@ import (
 	"github.com/TinyRogue/lembook-serv/graph/generated"
 	"github.com/TinyRogue/lembook-serv/graph/generated/model"
 	"github.com/TinyRogue/lembook-serv/internal/users"
-	"github.com/TinyRogue/lembook-serv/pkg/jwt"
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (string, error) {
@@ -19,24 +18,29 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 	var user users.User
 	user.Username = input.Username
 	user.Password = input.Password
-	_, err := user.Create()
+	err := user.Create()
 	if err != nil {
 		log.Println("Could not create user due to:" + err.Error())
-		return "", err
-	}
-
-	token, err := jwt.GenerateToken(user.Username)
-	if err != nil {
-		log.Println("Could not generate token due to:" + err.Error())
-		return "", err
+		return "error", err
 	}
 
 	log.Println("User created.")
-	return token, nil
+	return "success", nil
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
-	panic(fmt.Errorf("not implemented"))
+	log.Println("Login request from " + input.Username)
+	var user users.User
+	user.Username = input.Username
+	user.Password = input.Password
+	token, err := user.Login()
+	if err != nil {
+		log.Println("Could not login user due to:" + err.Error())
+		return "error", err
+	}
+
+	log.Println("User logged in.")
+	return *token, nil
 }
 
 func (r *mutationResolver) RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error) {
@@ -47,10 +51,14 @@ func (r *queryResolver) Ping(ctx context.Context) (string, error) {
 	return "Pong", nil
 }
 
-// Mutation returns generated1.MutationResolver implementation.
+func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+// Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
-// Query returns generated1.QueryResolver implementation.
+// Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
