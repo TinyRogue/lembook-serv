@@ -13,7 +13,7 @@ import (
 	"github.com/TinyRogue/lembook-serv/internal/users"
 )
 
-func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (string, error) {
+func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.TempRes, error) {
 	log.Println("Create new user request")
 	var user users.User
 	user.Username = input.Username
@@ -21,11 +21,17 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) 
 	err := user.Create()
 	if err != nil {
 		log.Println("Could not create user due to:" + err.Error())
-		return "error", err
+		ans := model.TempRes{
+			Res: "error",
+		}
+		return &ans, err
 	}
 
 	log.Println("User created.")
-	return "success", nil
+	ans := model.TempRes{
+		Res: "success",
+	}
+	return &ans, nil
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {

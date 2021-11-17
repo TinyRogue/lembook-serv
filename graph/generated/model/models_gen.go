@@ -16,6 +16,10 @@ type RefreshTokenInput struct {
 	Token string `json:"token"`
 }
 
+type TempRes struct {
+	Res string `json:"res"`
+}
+
 type User struct {
 	Username   string `json:"username"`
 	Identifier string `json:"identifier"`

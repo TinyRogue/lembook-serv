@@ -54,6 +54,10 @@ type ComplexityRoot struct {
 		Users func(childComplexity int) int
 	}
 
+	TempRes struct {
+		Res func(childComplexity int) int
+	}
+
 	User struct {
 		Identifier func(childComplexity int) int
 		Username   func(childComplexity int) int
@@ -61,7 +65,7 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	CreateUser(ctx context.Context, input model.NewUser) (string, error)
+	CreateUser(ctx context.Context, input model.NewUser) (*model.TempRes, error)
 	Login(ctx context.Context, input model.Login) (string, error)
 	RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error)
 }
@@ -134,6 +138,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Users(childComplexity), true
+
+	case "TempRes.res":
+		if e.complexity.TempRes.Res == nil {
+			break
+		}
+
+		return e.complexity.TempRes.Res(childComplexity), true
 
 	case "User.identifier":
 		if e.complexity.User.Identifier == nil {
@@ -218,6 +229,10 @@ var sources = []*ast.Source{
   identifier: String!
 }
 
+type TempRes {
+  res: String!
+}
+
 input NewUser {
   username: String!
   password: String!
@@ -238,7 +253,7 @@ type Query {
 }
 
 type Mutation {
-  createUser(input: NewUser!): String!
+  createUser(input: NewUser!): TempRes!
   login(input: Login!): String!
   refreshToken(input: RefreshTokenInput!): String!
 }`, BuiltIn: false},
@@ -384,9 +399,9 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*model.TempRes)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNTempRes2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋgraphᚋgeneratedᚋmodelᚐTempRes(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -612,6 +627,41 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	res := resTmp.(*introspection.Schema)
 	fc.Result = res
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TempRes_res(ctx context.Context, field graphql.CollectedField, obj *model.TempRes) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TempRes",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Res, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_username(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
@@ -1998,6 +2048,33 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
+var tempResImplementors = []string{"TempRes"}
+
+func (ec *executionContext) _TempRes(ctx context.Context, sel ast.SelectionSet, obj *model.TempRes) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tempResImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TempRes")
+		case "res":
+			out.Values[i] = ec._TempRes_res(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var userImplementors = []string{"User"}
 
 func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj *model.User) graphql.Marshaler {
@@ -2323,6 +2400,20 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNTempRes2githubᚗcomᚋTinyRogueᚋlembookᚑservᚋgraphᚋgeneratedᚋmodelᚐTempRes(ctx context.Context, sel ast.SelectionSet, v model.TempRes) graphql.Marshaler {
+	return ec._TempRes(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTempRes2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋgraphᚋgeneratedᚋmodelᚐTempRes(ctx context.Context, sel ast.SelectionSet, v *model.TempRes) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._TempRes(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋgraphᚋgeneratedᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {

@@ -3,6 +3,10 @@ type User {
   identifier: String!
 }
 
+type TempRes {
+  res: String!
+}
+
 input NewUser {
   username: String!
   password: String!
@@ -23,7 +27,7 @@ type Query {
 }
 
 type Mutation {
-  createUser(input: NewUser!): String!
+  createUser(input: NewUser!): TempRes!
   login(input: Login!): String!
   refreshToken(input: RefreshTokenInput!): String!
 }
