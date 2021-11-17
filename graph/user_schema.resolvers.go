@@ -5,60 +5,63 @@ package graph
 
 import (
 	"context"
-	"fmt"
-	"log"
-
 	"github.com/TinyRogue/lembook-serv/graph/generated"
 	"github.com/TinyRogue/lembook-serv/graph/generated/model"
-	"github.com/TinyRogue/lembook-serv/internal/users"
+	"github.com/TinyRogue/lembook-serv/internal/models"
+	"log"
 )
 
-func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.TempRes, error) {
+func (r *mutationResolver) Register(ctx context.Context, input model.Registration) (*model.Depiction, error) {
 	log.Println("Create new user request")
-	var user users.User
-	user.Username = input.Username
-	user.Password = input.Password
-	err := user.Create()
+	req := models.Registration{GQLRegistration: input}
+
+	if !models.IsPasswordValid(req.GQLRegistration.Password) {
+		errMsg := models.InvalidPassword.Error()
+		log.Println("Could not create user due to:" + errMsg)
+		ans := model.Depiction{
+			Res:   nil,
+			Error: &errMsg,
+		}
+		return &ans, models.InvalidPassword
+	}
+
+	err := req.Save(ctx)
 	if err != nil {
-		log.Println("Could not create user due to:" + err.Error())
-		ans := model.TempRes{
-			Res: "error",
+		errMsg := err.Error()
+		log.Println("Could not create user due to:" + errMsg)
+		ans := model.Depiction{
+			Res:   nil,
+			Error: &errMsg,
 		}
 		return &ans, err
 	}
 
-	log.Println("User created.")
-	ans := model.TempRes{
-		Res: "success",
-	}
-	return &ans, nil
+	successMsg := "user created"
+	log.Println(successMsg)
+
+	return &model.Depiction{
+		Res:   &successMsg,
+		Error: nil,
+	}, nil
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
 	log.Println("Login request from " + input.Username)
-	var user users.User
+	var user models.User
 	user.Username = input.Username
 	user.Password = input.Password
-	token, err := user.Login()
-	if err != nil {
-		log.Println("Could not login user due to:" + err.Error())
-		return "error", err
-	}
+	//token, err := user.Login()
+	//if err != nil {
+	//	log.Println("Could not login user due to:" + err.Error())
+	//	return "error", err
+	//}
 
 	log.Println("User logged in.")
-	return *token, nil
+	return "nil", nil
 }
 
-func (r *mutationResolver) RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *queryResolver) Ping(ctx context.Context) (string, error) {
+func (r *queryResolver) Ping(_ context.Context) (string, error) {
 	return "Pong", nil
-}
-
-func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	panic(fmt.Errorf("not implemented"))
 }
 
 // Mutation returns generated.MutationResolver implementation.

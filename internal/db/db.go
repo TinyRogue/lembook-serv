@@ -1,8 +1,7 @@
-package db
+package service
 
 import (
 	"context"
-	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
@@ -10,18 +9,19 @@ import (
 	"time"
 )
 
+const (
+	Name                = "TheDB"
+	UsersCollectionName = "users"
+)
+
 var (
 	Client *mongo.Client
+	DB     *mongo.Database
 )
 
 func InitDb() {
 	log.Println("Initialising Mongo Database")
-	client, err := mongo.NewClient(options.Client().ApplyURI(
-		fmt.Sprintf("mongodb+srv://%s:%s@all.iysnb.mongodb.net/%s?retryWrites=true&w=majority",
-			os.Getenv("DB_USER"),
-			os.Getenv("DB_PASSWORD"),
-			os.Getenv("DB_NAME")),
-	))
+	client, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("ATLAS_URI")))
 
 	if err != nil {
 		log.Fatal(err)
@@ -38,6 +38,7 @@ func InitDb() {
 
 	log.Println("Database connection established!")
 	Client = client
+	DB = client.Database(Name)
 }
 
 func Disconnect() {

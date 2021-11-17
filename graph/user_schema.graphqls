@@ -1,13 +1,18 @@
+# This could be generified somehow
+type Depiction {
+  res: String
+  error: String
+}
+
 type User {
+  UID: String!
   username: String!
-  identifier: String!
+  Password: String!
+  Token: String
+  TokenSelector: String
 }
 
-type TempRes {
-  res: String!
-}
-
-input NewUser {
+input Registration {
   username: String!
   password: String!
 }
@@ -17,17 +22,11 @@ input Login {
   password: String!
 }
 
-input RefreshTokenInput{
-  token: String!
-}
-
 type Query {
   ping: String!
-  users: [User!]!
 }
 
 type Mutation {
-  createUser(input: NewUser!): TempRes!
+  register(input: Registration!): Depiction!
   login(input: Login!): String!
-  refreshToken(input: RefreshTokenInput!): String!
 }

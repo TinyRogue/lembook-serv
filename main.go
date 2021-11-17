@@ -23,8 +23,8 @@ func CorsMiddleware(next http.Handler) http.Handler {
 func main() {
 	_ = godotenv.Load()
 	port := os.Getenv("PORT")
-	db.InitDb()
-	defer db.Disconnect()
+	service.InitDb()
+	defer service.Disconnect()
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))

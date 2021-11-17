@@ -2,25 +2,26 @@
 
 package model
 
+type Depiction struct {
+	Res   *string `json:"res"`
+	Error *string `json:"error"`
+}
+
 type Login struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-type NewUser struct {
+type Registration struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-type RefreshTokenInput struct {
-	Token string `json:"token"`
-}
-
-type TempRes struct {
-	Res string `json:"res"`
-}
-
 type User struct {
-	Username   string `json:"username"`
-	Identifier string `json:"identifier"`
+	Username      string  `json:"username"`
+	Identifier    string  `json:"identifier"`
+	UID           string  `json:"Uid"`
+	Password      string  `json:"Password"`
+	Token         *string `json:"Token"`
+	TokenSelector *string `json:"TokenSelector"`
 }
