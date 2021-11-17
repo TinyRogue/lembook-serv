@@ -16,7 +16,7 @@ const minPasswordLen = 10
 
 var (
 	UserAlreadyExists = errors.New("user already exists")
-	InvalidPassword   = errors.New("invalid password")
+	InvalidPassword   = errors.New("password does not meet its requirements")
 )
 
 type Registration struct {
@@ -36,12 +36,12 @@ func (req *Registration) Save(ctx context.Context) error {
 		return UserAlreadyExists
 	}
 
-	hashedPassword, err := hash.Generate(&req.GQLRegistration.Password)
+	hashedPassword, err := hash.BeautifyPassword(req.GQLRegistration.Password, nil)
 	if err != nil {
 		return err
 	}
 
-	UID, err := nano.Nanoid()
+	UID, _ := nano.Nanoid()
 	newUser := User{
 		UID:           UID,
 		Username:      req.GQLRegistration.Username,
@@ -52,7 +52,7 @@ func (req *Registration) Save(ctx context.Context) error {
 
 	usersCollection := service.DB.Collection(service.UsersCollectionName)
 	_, err = usersCollection.InsertOne(ctx, newUser)
-	return nil
+	return err
 }
 
 //func (user *User) Login() (*string, error) {
@@ -79,38 +79,6 @@ func (req *Registration) Save(ctx context.Context) error {
 //	return &user.Token, nil
 //}
 //
-//TODO: write tests
-//func generateUID(users *mongo.Collection, username *string) (*string, error) {
-//	userCursor, err := users.Find(context.TODO(), bson.M{"username": username})
-//	if err != nil {
-//		return nil, err
-//	}
-//	defer func(userCursor *mongo.Cursor, ctx context.Context) {
-//		_ = userCursor.Close(ctx)
-//	}(userCursor, context.Background())
-//
-//	var uid string
-//	for unique := false; !unique; {
-//		unique = true
-//		uid, err = nano.Generate("0123456789", 4)
-//		if err != nil {
-//			return nil, err
-//		}
-//
-//		for userCursor.Next(context.TODO()) {
-//			var currUsr bson.M
-//			if err = userCursor.Decode(&currUsr); err != nil {
-//				return nil, err
-//			}
-//			if currUsr["identifier"] == uid {
-//				unique = false
-//				break
-//			}
-//		}
-//	}
-//
-//	return &uid, nil
-//}
 
 func FindUserBy(ctx *context.Context, by string, value interface{}) (*User, error) {
 	var res User
