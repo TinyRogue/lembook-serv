@@ -1,7 +1,6 @@
 # This could be generified somehow
 type Depiction {
   res: String
-  error: String
 }
 
 type User {

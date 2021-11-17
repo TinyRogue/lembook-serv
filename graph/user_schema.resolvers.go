@@ -16,32 +16,21 @@ func (r *mutationResolver) Register(ctx context.Context, input model.Registratio
 	req := models.Registration{GQLRegistration: input}
 
 	if !models.IsPasswordValid(req.GQLRegistration.Password) {
-		errMsg := models.InvalidPassword.Error()
-		log.Println("Could not create user due to:" + errMsg)
-		ans := model.Depiction{
-			Res:   nil,
-			Error: &errMsg,
-		}
-		return &ans, models.InvalidPassword
+		log.Println("Could not create user due to: " + models.InvalidPassword.Error())
+		return nil, models.InvalidPassword
 	}
 
 	err := req.Save(ctx)
 	if err != nil {
-		errMsg := err.Error()
-		log.Println("Could not create user due to:" + errMsg)
-		ans := model.Depiction{
-			Res:   nil,
-			Error: &errMsg,
-		}
-		return &ans, err
+		log.Println("Could not create user due to: " + err.Error())
+		return nil, err
 	}
 
 	successMsg := "user created"
 	log.Println(successMsg)
 
 	return &model.Depiction{
-		Res:   &successMsg,
-		Error: nil,
+		Res: &successMsg,
 	}, nil
 }
 
@@ -50,14 +39,14 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string
 	var user models.User
 	user.Username = input.Username
 	user.Password = input.Password
-	//token, err := user.Login()
-	//if err != nil {
-	//	log.Println("Could not login user due to:" + err.Error())
-	//	return "error", err
-	//}
+	token, err := user.Login()
+	if err != nil {
+		log.Println("Could not login user due to:" + err.Error())
+		return "error", err
+	}
 
 	log.Println("User logged in.")
-	return "nil", nil
+	return *token, nil
 }
 
 func (r *queryResolver) Ping(_ context.Context) (string, error) {

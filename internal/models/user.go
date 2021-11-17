@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/TinyRogue/lembook-serv/graph/generated/model"
 	service "github.com/TinyRogue/lembook-serv/internal/db"
 	"github.com/TinyRogue/lembook-serv/pkg/hash"
@@ -16,6 +17,7 @@ const minPasswordLen = 10
 
 var (
 	UserAlreadyExists = errors.New("user already exists")
+	UserDoesntExists  = errors.New("user does not exists in database")
 	InvalidPassword   = errors.New("password does not meet its requirements")
 )
 
@@ -55,30 +57,34 @@ func (req *Registration) Save(ctx context.Context) error {
 	return err
 }
 
-//func (user *User) Login() (*string, error) {
-//	usersCollection := db.Client.Database("TheDB").Collection("Users")
-//	var dbUser bson.M
-//	if err := usersCollection.FindOne(context.TODO(), bson.M{"username": user.Username}).Decode(&dbUser); err != nil {
-//		return nil, notExists
-//	}
-//	hash := fmt.Sprintf("%v", dbUser["password"])
-//	if !checkPasswordHash(&user.Password, &hash) {
-//		return nil, invalidPassword
-//	}
-//
-//	token, err := jwt.GenerateToken(&user.Username)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	user.Token = *token
-//	_, err = usersCollection.UpdateOne(context.TODO(), bson.M{"_id": dbUser["_id"]}, bson.M{"token": user.Token})
-//	if err != nil {
-//		return nil, err
-//	}
-//	return &user.Token, nil
-//}
-//
+func (user *User) Login() (*string, error) {
+	usersCollection := service.DB.Collection("Users")
+	var dbUser bson.M
+	if err := usersCollection.FindOne(context.TODO(), bson.M{"username": user.Username}).Decode(&dbUser); err != nil {
+		return nil, UserDoesntExists
+	}
+	beautifiedPassword := fmt.Sprintf("%v", dbUser["password"])
+	match, err := hash.Compare(user.Password, beautifiedPassword)
+	if err != nil {
+		return nil, err
+	}
+	if !match {
+		return nil, InvalidPassword
+	}
+
+	//token, err := jwt.GenerateToken(&user.Username)
+	//if err != nil {
+	//	return nil, err
+	//}
+
+	//user.Token = *token
+	//_, err = usersCollection.UpdateOne(context.TODO(), bson.M{"_id": dbUser["_id"]}, bson.M{"token": user.Token})
+	//if err != nil {
+	//	return nil, err
+	//}
+	//return &user.Token, nil
+	return nil, nil
+}
 
 func FindUserBy(ctx *context.Context, by string, value interface{}) (*User, error) {
 	var res User
