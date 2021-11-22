@@ -5,10 +5,13 @@ package graph
 
 import (
 	"context"
+	"fmt"
+	"log"
+
 	"github.com/TinyRogue/lembook-serv/graph/generated"
 	"github.com/TinyRogue/lembook-serv/graph/generated/model"
 	"github.com/TinyRogue/lembook-serv/internal/models"
-	"log"
+	"github.com/TinyRogue/lembook-serv/pkg/middleware"
 )
 
 func (r *mutationResolver) Register(ctx context.Context, input model.Registration) (*model.Depiction, error) {
@@ -16,8 +19,8 @@ func (r *mutationResolver) Register(ctx context.Context, input model.Registratio
 	req := models.Registration{GQLRegistration: input}
 
 	if !models.IsPasswordValid(req.GQLRegistration.Password) {
-		log.Println("Could not create user due to: " + models.InvalidPassword.Error())
-		return nil, models.InvalidPassword
+		log.Println("Could not create user due to: " + models.InvalidPasswordRequest.Error())
+		return nil, models.InvalidPasswordRequest
 	}
 
 	err := req.Save(ctx)
@@ -34,22 +37,32 @@ func (r *mutationResolver) Register(ctx context.Context, input model.Registratio
 	}, nil
 }
 
-func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
+func (r *mutationResolver) Login(ctx context.Context, input model.Login) (*model.Depiction, error) {
 	log.Println("Login request from " + input.Username)
 	var user models.User
 	user.Username = input.Username
 	user.Password = input.Password
-	token, err := user.Login()
+	token, err := user.Login(ctx)
 	if err != nil {
 		log.Println("Could not login user due to:" + err.Error())
-		return "error", err
+		return nil, err
 	}
 
 	log.Println("User logged in.")
-	return *token, nil
+	return &model.Depiction{
+		Res: token,
+	}, nil
 }
 
-func (r *queryResolver) Ping(_ context.Context) (string, error) {
+func (r *queryResolver) Ping(ctx context.Context) (string, error) {
+	return "Pong", nil
+}
+
+func (r *queryResolver) AuthorisedPing(ctx context.Context) (string, error) {
+	user := middleware.FindUserByCtx(ctx)
+	if user == nil {
+		return "", fmt.Errorf("access denied")
+	}
 	return "Pong", nil
 }
 

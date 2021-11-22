@@ -7,8 +7,7 @@ type User {
   UID: String!
   username: String!
   Password: String!
-  Token: String
-  TokenSelector: String
+  Token: [String]
 }
 
 input Registration {
@@ -23,9 +22,10 @@ input Login {
 
 type Query {
   ping: String!
+  authorisedPing: String!
 }
 
 type Mutation {
   register(input: Registration!): Depiction!
-  login(input: Login!): String!
+  login(input: Login!): Depiction!
 }

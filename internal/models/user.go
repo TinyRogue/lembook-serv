@@ -3,10 +3,10 @@ package models
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/TinyRogue/lembook-serv/graph/generated/model"
 	service "github.com/TinyRogue/lembook-serv/internal/db"
 	"github.com/TinyRogue/lembook-serv/pkg/hash"
+	"github.com/TinyRogue/lembook-serv/pkg/jwt"
 	nano "github.com/matoous/go-nanoid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,9 +16,9 @@ import (
 const minPasswordLen = 10
 
 var (
-	UserAlreadyExists = errors.New("user already exists")
-	UserDoesntExists  = errors.New("user does not exists in database")
-	InvalidPassword   = errors.New("password does not meet its requirements")
+	UserAlreadyExists      = errors.New("user already exists")
+	InvalidCredentials     = errors.New("invalid credentials")
+	InvalidPasswordRequest = errors.New("password does not meet its requirements")
 )
 
 type Registration struct {
@@ -26,15 +26,14 @@ type Registration struct {
 }
 
 type User struct {
-	UID           string  `json:"uid"`
-	Username      string  `json:"username"`
-	Password      string  `json:"Password"`
-	Token         *string `json:"Token"`
-	TokenSelector *string `json:"TokenSelector"`
+	UID      string    `json:"uid"`
+	Username string    `json:"username"`
+	Password string    `json:"Password"`
+	Token    []*string `json:"Token"`
 }
 
 func (req *Registration) Save(ctx context.Context) error {
-	if IsUsernameTaken(&ctx, req.GQLRegistration.Username) {
+	if IsUsernameTaken(ctx, req.GQLRegistration.Username) {
 		return UserAlreadyExists
 	}
 
@@ -45,11 +44,10 @@ func (req *Registration) Save(ctx context.Context) error {
 
 	UID, _ := nano.Nanoid()
 	newUser := User{
-		UID:           UID,
-		Username:      req.GQLRegistration.Username,
-		Password:      hashedPassword,
-		Token:         nil,
-		TokenSelector: nil,
+		UID:      UID,
+		Username: req.GQLRegistration.Username,
+		Password: hashedPassword,
+		Token:    []*string{},
 	}
 
 	usersCollection := service.DB.Collection(service.UsersCollectionName)
@@ -57,43 +55,48 @@ func (req *Registration) Save(ctx context.Context) error {
 	return err
 }
 
-func (user *User) Login() (*string, error) {
-	usersCollection := service.DB.Collection("Users")
-	var dbUser bson.M
-	if err := usersCollection.FindOne(context.TODO(), bson.M{"username": user.Username}).Decode(&dbUser); err != nil {
-		return nil, UserDoesntExists
+func (u *User) Login(ctx context.Context) (*string, error) {
+	dbUser, err := FindUserBy(ctx, "username", u.Username)
+	if err == mongo.ErrNoDocuments {
+		return nil, InvalidCredentials
+	} else if err != nil {
+		return nil, err
 	}
-	beautifiedPassword := fmt.Sprintf("%v", dbUser["password"])
-	match, err := hash.Compare(user.Password, beautifiedPassword)
+
+	beautifiedPassword := dbUser.Password
+	match, err := hash.Compare(u.Password, beautifiedPassword)
 	if err != nil {
 		return nil, err
 	}
 	if !match {
-		return nil, InvalidPassword
+		return nil, InvalidCredentials
 	}
 
-	//token, err := jwt.GenerateToken(&user.Username)
-	//if err != nil {
-	//	return nil, err
-	//}
-
-	//user.Token = *token
-	//_, err = usersCollection.UpdateOne(context.TODO(), bson.M{"_id": dbUser["_id"]}, bson.M{"token": user.Token})
-	//if err != nil {
-	//	return nil, err
-	//}
-	//return &user.Token, nil
-	return nil, nil
+	token, err := dbUser.AssignNewToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return token, nil
 }
 
-func FindUserBy(ctx *context.Context, by string, value interface{}) (*User, error) {
+func (u *User) AssignNewToken(ctx context.Context) (*string, error) {
+	token, err := jwt.GenerateToken(&u.UID)
+	if err != nil {
+		return nil, err
+	}
+	usersCollection := service.DB.Collection(service.UsersCollectionName)
+	_, err = usersCollection.UpdateOne(ctx, bson.M{"uid": u.UID}, bson.D{{"$push", bson.D{{"token", token}}}})
+	return token, err
+}
+
+func FindUserBy(ctx context.Context, by string, value interface{}) (*User, error) {
 	var res User
 	usersCollection := service.DB.Collection(service.UsersCollectionName)
-	err := usersCollection.FindOne(*ctx, bson.M{by: value}).Decode(&res)
+	err := usersCollection.FindOne(ctx, bson.M{by: value}).Decode(&res)
 	return &res, err
 }
 
-func IsUsernameTaken(ctx *context.Context, username string) bool {
+func IsUsernameTaken(ctx context.Context, username string) bool {
 	_, err := FindUserBy(ctx, "username", username)
 	return err != mongo.ErrNoDocuments
 }

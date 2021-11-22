@@ -18,7 +18,7 @@ const (
 func GenerateToken(username *string) (*string, error) {
 	token := jwt.New(jwt.SigningMethodHS512)
 	claims := token.Claims.(jwt.MapClaims)
-	claims["username"] = *username
+	claims["uid"] = *username
 	claims["iat"] = time.Now()
 	claims["exp"] = time.Now().Add(time.Hour * dayInHours * weekInDays).Unix()
 	tokenString, err := token.SignedString(SecretKey)
@@ -38,7 +38,7 @@ func ParseToken(tokenStr string) (*string, error) {
 		return nil, err
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		username := claims["username"].(string)
+		username := claims["uid"].(string)
 		return &username, nil
 	} else {
 		return nil, err

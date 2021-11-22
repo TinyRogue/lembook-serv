@@ -3,8 +3,7 @@
 package model
 
 type Depiction struct {
-	Res   *string `json:"res"`
-	Error *string `json:"error"`
+	Res *string `json:"res"`
 }
 
 type Login struct {
@@ -18,10 +17,8 @@ type Registration struct {
 }
 
 type User struct {
-	Username      string  `json:"username"`
-	Identifier    string  `json:"identifier"`
-	UID           string  `json:"Uid"`
-	Password      string  `json:"Password"`
-	Token         *string `json:"Token"`
-	TokenSelector *string `json:"TokenSelector"`
+	UID      string    `json:"UID"`
+	Username string    `json:"username"`
+	Password string    `json:"Password"`
+	Token    []*string `json:"Token"`
 }
