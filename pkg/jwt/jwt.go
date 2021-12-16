@@ -22,8 +22,6 @@ func GenerateToken(username *string) (*string, error) {
 	claims["iat"] = time.Now()
 	claims["exp"] = time.Now().Add(time.Hour * dayInHours * weekInDays).Unix()
 	tokenString, err := token.SignedString(SecretKey)
-
-	//TODO: Handle error in GenerateToken request
 	if err != nil {
 		return nil, err
 	}

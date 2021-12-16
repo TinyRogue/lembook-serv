@@ -12,17 +12,31 @@ import (
 type ContextKey string
 
 const ContextUserKey ContextKey = "user"
+const ContextReqWriterKey ContextKey = "reqWriter"
+const ContextJWT ContextKey = "jwt"
+
+type JWTHandler struct {
+	jwt string
+}
 
 func Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		header := r.Header.Get("auth")
+		cookie, _ := r.Cookie("auth")
+		if cookie != nil {
+			ctx := context.WithValue(r.Context(), ContextJWT, &JWTHandler{jwt: cookie.Value})
+			r = r.WithContext(ctx)
+		}
+
+		ctx := context.WithValue(r.Context(), ContextReqWriterKey, &w)
+		r = r.WithContext(ctx)
+
 		// Unauthenticated
-		if header == "" {
+		if cookie == nil {
 			next.ServeHTTP(w, r)
 			return
 		}
 
-		uid, err := jwt.ParseToken(header)
+		uid, err := jwt.ParseToken(cookie.Value)
 		if err != nil {
 			next.ServeHTTP(w, r)
 			return
@@ -35,15 +49,15 @@ func Auth(next http.Handler) http.Handler {
 			return
 		}
 
-		marshalledUser, err := json.Marshal(&user)
+		marshalledUser, err := json.Marshal(user)
 		if err != nil {
-			log.Println("Couldn't marshal due to: ", err)
 			next.ServeHTTP(w, r)
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), ContextUserKey, marshalledUser)
-		r = r.WithContext(ctx)
+		userCtx := context.WithValue(r.Context(), ContextUserKey, &marshalledUser)
+		r = r.WithContext(userCtx)
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -53,8 +67,16 @@ func FindUserByCtx(ctx context.Context) *models.User {
 	var user models.User
 	err := json.Unmarshal(raw, &user)
 	if err != nil {
-		log.Println("Couldn't unmarshall due to ", err)
+		log.Println("Couldn't unmarshall user due to ", err)
 		return nil
 	}
 	return &user
+}
+
+func GetResWriter(ctx context.Context) *http.ResponseWriter {
+	resWriter, ok := ctx.Value(ContextReqWriterKey).(*http.ResponseWriter)
+	if !ok {
+		log.Fatalln("FATALITY")
+	}
+	return resWriter
 }

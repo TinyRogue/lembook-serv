@@ -5,13 +5,14 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
-
 	"github.com/TinyRogue/lembook-serv/graph/generated"
 	"github.com/TinyRogue/lembook-serv/graph/generated/model"
 	"github.com/TinyRogue/lembook-serv/internal/models"
 	"github.com/TinyRogue/lembook-serv/pkg/middleware"
+	"log"
+	"net/http"
 )
 
 func (r *mutationResolver) Register(ctx context.Context, input model.Registration) (*model.Depiction, error) {
@@ -38,6 +39,12 @@ func (r *mutationResolver) Register(ctx context.Context, input model.Registratio
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (*model.Depiction, error) {
+	w := middleware.GetResWriter(ctx)
+	if *w == nil {
+		log.Println("Could not get writer")
+		return nil, errors.New("internal server error")
+	}
+
 	log.Println("Login request from " + input.Username)
 	var user models.User
 	user.Username = input.Username
@@ -48,13 +55,22 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (*model
 		return nil, err
 	}
 
-	log.Println("User logged in.")
+	log.Println("User logged in. Setting up cookie.")
+	http.SetCookie(*w, &http.Cookie{
+		Name:     "auth",
+		Value:    *token,
+		HttpOnly: true,
+		Path:     "/",
+		Domain:   "localhost",
+	})
+
+	msg := "success"
 	return &model.Depiction{
-		Res: token,
+		Res: &msg,
 	}, nil
 }
 
-func (r *queryResolver) Ping(ctx context.Context) (string, error) {
+func (r *queryResolver) Ping(_ context.Context) (string, error) {
 	return "Pong", nil
 }
 
