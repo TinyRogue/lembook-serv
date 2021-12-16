@@ -226,7 +226,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "graph/user_schema.graphqls", Input: `# This could be generified somehow
+	{Name: "graph/schema.graphqls", Input: `# This could be generified somehow
 type Depiction {
   res: String
 }
