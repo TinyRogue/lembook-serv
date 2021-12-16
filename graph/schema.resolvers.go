@@ -7,12 +7,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/TinyRogue/lembook-serv/graph/generated"
-	"github.com/TinyRogue/lembook-serv/graph/generated/model"
 	"github.com/TinyRogue/lembook-serv/internal/models"
 	"github.com/TinyRogue/lembook-serv/pkg/middleware"
 	"log"
 	"net/http"
+
+	"github.com/TinyRogue/lembook-serv/graph/generated"
+	"github.com/TinyRogue/lembook-serv/graph/generated/model"
 )
 
 func (r *mutationResolver) Register(ctx context.Context, input model.Registration) (*model.Depiction, error) {
