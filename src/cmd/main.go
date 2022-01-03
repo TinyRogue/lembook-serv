@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	_ = godotenv.Load()
+	_ = godotenv.Load("../../../.env")
 	port := os.Getenv("PORT")
 	var mode string
 	if len(os.Args) == 1 || os.Args[1] == "--dev" {
