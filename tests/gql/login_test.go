@@ -3,9 +3,9 @@ package gql
 import (
 	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql/handler"
-	graph2 "github.com/TinyRogue/lembook-serv/cmd/gql/graph"
-	generated2 "github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated"
-	model2 "github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
+	"github.com/TinyRogue/lembook-serv/src/cmd/gql/graph"
+	"github.com/TinyRogue/lembook-serv/src/cmd/gql/graph/generated"
+	"github.com/TinyRogue/lembook-serv/src/cmd/gql/graph/generated/model"
 	"github.com/joho/godotenv"
 	"os"
 	"testing"
@@ -33,12 +33,12 @@ func TestLogin(t *testing.T) {
     		}
   		}`
 
-	c := client.New(handler.NewDefaultServer(generated2.NewExecutableSchema(generated2.Config{Resolvers: &graph2.Resolver{}})))
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}})))
 	var res string
 
 	for i, tt := range loginTests {
 		t.Run(tt.testName, func(t *testing.T) {
-			loginData := client.Var("login", model2.Login{
+			loginData := client.Var("login", model.Login{
 				Username: loginTests[i].username,
 				Password: loginTests[i].password,
 			})

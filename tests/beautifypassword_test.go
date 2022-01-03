@@ -1,7 +1,7 @@
 package tests
 
 import (
-	"github.com/TinyRogue/lembook-serv/pkg/hash"
+	hash2 "github.com/TinyRogue/lembook-serv/src/pkg/hash"
 	"math"
 	"testing"
 )
@@ -16,7 +16,7 @@ func TestBeautifyPasswordSpeed(t *testing.T) {
 
 func BenchmarkBeautifyPerformance(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_, err := hash.BeautifyPassword("pa$$word", nil)
+		_, err := hash2.BeautifyPassword("pa$$word", nil)
 		if err != nil {
 			b.Errorf(err.Error())
 		}
@@ -27,7 +27,7 @@ func TestBeautifyPasswordCorrectness(t *testing.T) {
 	probes := 20
 	hashes := make([]string, probes)
 	for i := 0; i < probes; i++ {
-		hashedPassword, err := hash.BeautifyPassword("pa$$word", nil)
+		hashedPassword, err := hash2.BeautifyPassword("pa$$word", nil)
 		if err != nil {
 			t.Errorf(err.Error())
 		}
@@ -48,12 +48,12 @@ func TestBeautifyPasswordCorrectness(t *testing.T) {
 
 func TestCompare(t *testing.T) {
 	password := "The3Greate$tPasswords3v3r"
-	hashedPassword, err := hash.BeautifyPassword(password, nil)
+	hashedPassword, err := hash2.BeautifyPassword(password, nil)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 
-	match, err := hash.Compare(password, hashedPassword)
+	match, err := hash2.Compare(password, hashedPassword)
 	if err != nil {
 		t.Errorf(err.Error())
 	} else if !match {
@@ -73,7 +73,7 @@ func TestDecodeHash(t *testing.T) {
 	}
 	for _, tt := range toDecode {
 		t.Run(tt.hash, func(t *testing.T) {
-			_, _, _, err := hash.DecodeHash(tt.hash)
+			_, _, _, err := hash2.DecodeHash(tt.hash)
 			if !tt.ans && err == nil {
 				t.Errorf(tt.desc)
 			}

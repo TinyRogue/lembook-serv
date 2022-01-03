@@ -1,12 +1,12 @@
-package models
+package user
 
 import (
 	"context"
 	"errors"
-	model2 "github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
-	service "github.com/TinyRogue/lembook-serv/internal/db"
+	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
 	"github.com/TinyRogue/lembook-serv/pkg/hash"
 	"github.com/TinyRogue/lembook-serv/pkg/jwt"
+	service "github.com/TinyRogue/lembook-serv/pkg/mongo"
 	nano "github.com/matoous/go-nanoid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -22,7 +22,7 @@ var (
 )
 
 type Registration struct {
-	GQLRegistration model2.Registration `json:"gql_registration"`
+	GQLRegistration model.Registration `json:"gql_registration"`
 }
 
 type User struct {

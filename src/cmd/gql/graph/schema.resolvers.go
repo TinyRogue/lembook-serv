@@ -7,21 +7,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	generated2 "github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated"
-	model2 "github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
-	"github.com/TinyRogue/lembook-serv/internal/models"
-	"github.com/TinyRogue/lembook-serv/pkg/middleware"
 	"log"
 	"net/http"
+
+	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated"
+	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
+	"github.com/TinyRogue/lembook-serv/pkg/middleware"
+	"github.com/TinyRogue/lembook-serv/pkg/user"
 )
 
-func (r *mutationResolver) Register(ctx context.Context, input model2.Registration) (*model2.Depiction, error) {
+func (r *mutationResolver) Register(ctx context.Context, input model.Registration) (*model.Depiction, error) {
 	log.Println("Create new user request")
-	req := models.Registration{GQLRegistration: input}
+	req := user.Registration{GQLRegistration: input}
 
-	if !models.IsPasswordValid(req.GQLRegistration.Password) {
-		log.Println("Could not create user due to: " + models.InvalidPasswordRequest.Error())
-		return nil, models.InvalidPasswordRequest
+	if !user.IsPasswordValid(req.GQLRegistration.Password) {
+		log.Println("Could not create user due to: " + user.InvalidPasswordRequest.Error())
+		return nil, user.InvalidPasswordRequest
 	}
 
 	err := req.Save(ctx)
@@ -33,12 +34,12 @@ func (r *mutationResolver) Register(ctx context.Context, input model2.Registrati
 	successMsg := "user created"
 	log.Println(successMsg)
 
-	return &model2.Depiction{
+	return &model.Depiction{
 		Res: &successMsg,
 	}, nil
 }
 
-func (r *mutationResolver) Login(ctx context.Context, input model2.Login) (*model2.Depiction, error) {
+func (r *mutationResolver) Login(ctx context.Context, input model.Login) (*model.Depiction, error) {
 	w := middleware.GetResWriter(ctx)
 	if w == nil {
 		log.Println("Could not get writer")
@@ -46,10 +47,10 @@ func (r *mutationResolver) Login(ctx context.Context, input model2.Login) (*mode
 	}
 
 	log.Println("Login request from " + input.Username)
-	var user models.User
-	user.Username = input.Username
-	user.Password = input.Password
-	token, err := user.Login(ctx)
+	var u user.User
+	u.Username = input.Username
+	u.Password = input.Password
+	token, err := u.Login(ctx)
 	if err != nil {
 		log.Println("Could not login user due to:" + err.Error())
 		return nil, err
@@ -65,28 +66,28 @@ func (r *mutationResolver) Login(ctx context.Context, input model2.Login) (*mode
 	})
 
 	msg := "success"
-	return &model2.Depiction{
+	return &model.Depiction{
 		Res: &msg,
 	}, nil
 }
 
-func (r *queryResolver) Ping(_ context.Context) (string, error) {
+func (r *queryResolver) Ping(ctx context.Context) (string, error) {
 	return "Pong", nil
 }
 
 func (r *queryResolver) AuthorisedPing(ctx context.Context) (string, error) {
-	user := middleware.FindUserByCtx(ctx)
-	if user == nil {
+	u := middleware.FindUserByCtx(ctx)
+	if u == nil {
 		return "", fmt.Errorf("access denied")
 	}
 	return "Pong", nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
-func (r *Resolver) Mutation() generated2.MutationResolver { return &mutationResolver{r} }
+func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 // Query returns generated.QueryResolver implementation.
-func (r *Resolver) Query() generated2.QueryResolver { return &queryResolver{r} }
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

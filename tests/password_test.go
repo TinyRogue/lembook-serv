@@ -1,7 +1,7 @@
 package tests
 
 import (
-	"github.com/TinyRogue/lembook-serv/internal/models"
+	models2 "github.com/TinyRogue/lembook-serv/src/internal/models"
 	"testing"
 )
 
@@ -19,7 +19,7 @@ func TestIsPasswordValid(t *testing.T) {
 	}
 	for _, tt := range passwordTests {
 		t.Run(tt.password, func(t *testing.T) {
-			got := models.IsPasswordValid(tt.password)
+			got := models2.IsPasswordValid(tt.password)
 			if got != tt.ans {
 				t.Errorf("%#v got %v want %v. Desc: %v", tt, got, tt.ans, tt.desc)
 			}

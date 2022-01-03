@@ -3,8 +3,8 @@ package middleware
 import (
 	"context"
 	"encoding/json"
-	"github.com/TinyRogue/lembook-serv/internal/models"
 	"github.com/TinyRogue/lembook-serv/pkg/jwt"
+	"github.com/TinyRogue/lembook-serv/pkg/user"
 	"log"
 	"net/http"
 )
@@ -42,14 +42,14 @@ func Auth(next http.Handler) http.Handler {
 			return
 		}
 
-		user, err := models.FindUserBy(r.Context(), "uid", uid)
+		u, err := user.FindUserBy(r.Context(), "uid", uid)
 		// Not exists
 		if err != nil {
 			next.ServeHTTP(w, r)
 			return
 		}
 
-		marshalledUser, err := json.Marshal(user)
+		marshalledUser, err := json.Marshal(u)
 		if err != nil {
 			next.ServeHTTP(w, r)
 			return
@@ -62,15 +62,15 @@ func Auth(next http.Handler) http.Handler {
 	})
 }
 
-func FindUserByCtx(ctx context.Context) *models.User {
+func FindUserByCtx(ctx context.Context) *user.User {
 	raw, _ := ctx.Value(ContextUserKey).([]byte)
-	var user models.User
-	err := json.Unmarshal(raw, &user)
+	var u user.User
+	err := json.Unmarshal(raw, &u)
 	if err != nil {
 		log.Println("Couldn't unmarshall user due to ", err)
 		return nil
 	}
-	return &user
+	return &u
 }
 
 func GetResWriter(ctx context.Context) *http.ResponseWriter {

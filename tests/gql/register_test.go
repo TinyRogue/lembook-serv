@@ -4,10 +4,10 @@ import (
 	"context"
 	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql/handler"
-	graph2 "github.com/TinyRogue/lembook-serv/cmd/gql/graph"
-	generated2 "github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated"
-	model2 "github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
-	service "github.com/TinyRogue/lembook-serv/internal/db"
+	"github.com/TinyRogue/lembook-serv/src/cmd/gql/graph"
+	"github.com/TinyRogue/lembook-serv/src/cmd/gql/graph/generated"
+	"github.com/TinyRogue/lembook-serv/src/cmd/gql/graph/generated/model"
+	service2 "github.com/TinyRogue/lembook-serv/src/internal/db"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"os"
@@ -15,7 +15,7 @@ import (
 )
 
 func deleteUsers(t *testing.T) {
-	uh := service.DB.Collection(service.UsersCollectionName)
+	uh := service2.DB.Collection(service2.UsersCollectionName)
 	filter := bson.D{{"username", os.Getenv("TEST_REGISTER1")}}
 	_, err := uh.DeleteOne(context.Background(), filter)
 	if err != nil {
@@ -25,7 +25,7 @@ func deleteUsers(t *testing.T) {
 
 func TestRegister(t *testing.T) {
 	_ = godotenv.Load("../../.env")
-	service.InitDb()
+	service2.InitDb()
 
 	registerTests := []struct {
 		testName string
@@ -46,12 +46,12 @@ func TestRegister(t *testing.T) {
     		}
   		}`
 
-	c := client.New(handler.NewDefaultServer(generated2.NewExecutableSchema(generated2.Config{Resolvers: &graph2.Resolver{}})))
+	c := client.New(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}})))
 	var res map[string]map[string]interface{}
 
 	for i, tt := range registerTests {
 		t.Run(tt.testName, func(t *testing.T) {
-			registerData := client.Var("register", model2.Registration{
+			registerData := client.Var("register", model.Registration{
 				Username: registerTests[i].username,
 				Password: registerTests[i].password,
 			})
