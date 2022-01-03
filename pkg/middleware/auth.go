@@ -76,7 +76,7 @@ func FindUserByCtx(ctx context.Context) *models.User {
 func GetResWriter(ctx context.Context) *http.ResponseWriter {
 	resWriter, ok := ctx.Value(ContextReqWriterKey).(*http.ResponseWriter)
 	if !ok {
-		log.Fatalln("FATALITY")
+		return nil
 	}
 	return resWriter
 }

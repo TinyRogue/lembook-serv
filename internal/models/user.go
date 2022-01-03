@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 	"errors"
-	"github.com/TinyRogue/lembook-serv/graph/generated/model"
+	model2 "github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
 	service "github.com/TinyRogue/lembook-serv/internal/db"
 	"github.com/TinyRogue/lembook-serv/pkg/hash"
 	"github.com/TinyRogue/lembook-serv/pkg/jwt"
@@ -22,7 +22,7 @@ var (
 )
 
 type Registration struct {
-	GQLRegistration model.Registration `json:"gql_registration"`
+	GQLRegistration model2.Registration `json:"gql_registration"`
 }
 
 type User struct {

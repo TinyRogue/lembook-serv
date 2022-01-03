@@ -5,82 +5,26 @@ package graph
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"github.com/TinyRogue/lembook-serv/internal/models"
-	"github.com/TinyRogue/lembook-serv/pkg/middleware"
-	"log"
-	"net/http"
 
-	"github.com/TinyRogue/lembook-serv/graph/generated"
-	"github.com/TinyRogue/lembook-serv/graph/generated/model"
+	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated"
+	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
 )
 
 func (r *mutationResolver) Register(ctx context.Context, input model.Registration) (*model.Depiction, error) {
-	log.Println("Create new user request")
-	req := models.Registration{GQLRegistration: input}
-
-	if !models.IsPasswordValid(req.GQLRegistration.Password) {
-		log.Println("Could not create user due to: " + models.InvalidPasswordRequest.Error())
-		return nil, models.InvalidPasswordRequest
-	}
-
-	err := req.Save(ctx)
-	if err != nil {
-		log.Println("Could not create user due to: " + err.Error())
-		return nil, err
-	}
-
-	successMsg := "user created"
-	log.Println(successMsg)
-
-	return &model.Depiction{
-		Res: &successMsg,
-	}, nil
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.Login) (*model.Depiction, error) {
-	w := middleware.GetResWriter(ctx)
-	if *w == nil {
-		log.Println("Could not get writer")
-		return nil, errors.New("internal server error")
-	}
-
-	log.Println("Login request from " + input.Username)
-	var user models.User
-	user.Username = input.Username
-	user.Password = input.Password
-	token, err := user.Login(ctx)
-	if err != nil {
-		log.Println("Could not login user due to:" + err.Error())
-		return nil, err
-	}
-
-	log.Println("User logged in. Setting up cookie.")
-	http.SetCookie(*w, &http.Cookie{
-		Name:     "auth",
-		Value:    *token,
-		HttpOnly: true,
-		Path:     "/",
-		Domain:   "localhost",
-	})
-
-	msg := "success"
-	return &model.Depiction{
-		Res: &msg,
-	}, nil
+	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Ping(_ context.Context) (string, error) {
-	return "Pong", nil
+func (r *queryResolver) Ping(ctx context.Context) (string, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) AuthorisedPing(ctx context.Context) (string, error) {
-	user := middleware.FindUserByCtx(ctx)
-	if user == nil {
-		return "", fmt.Errorf("access denied")
-	}
-	return "Pong", nil
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Mutation returns generated.MutationResolver implementation.

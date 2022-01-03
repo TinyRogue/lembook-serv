@@ -1,12 +1,12 @@
 schema:
-  - graph/*.graphqls
+  - cmd/gql/graph/*.graphqls
 
 exec:
-  filename: graph/generated/generated.go
+  filename: cmd/gql/graph/generated/generated.go
   package: generated
 
 model:
-  filename: graph/generated/model/models_gen.go
+  filename: cmd/gql/graph/generated/model/models_gen.go
   package: model
 
 resolver:
@@ -15,7 +15,7 @@ resolver:
   package: graph
 
 autobind:
-  - "github.com/TinyRogue/lembook-serv/graph/generated/model"
+  - "github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
 
 models:
   ID:
