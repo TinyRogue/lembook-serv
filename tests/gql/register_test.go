@@ -4,10 +4,8 @@ import (
 	"context"
 	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/TinyRogue/lembook-serv/src/cmd/gql/graph"
-	"github.com/TinyRogue/lembook-serv/src/cmd/gql/graph/generated"
-	"github.com/TinyRogue/lembook-serv/src/cmd/gql/graph/generated/model"
-	service2 "github.com/TinyRogue/lembook-serv/src/internal/db"
+	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
+	service "github.com/TinyRogue/lembook-serv/pkg/mongo"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"os"
@@ -15,7 +13,7 @@ import (
 )
 
 func deleteUsers(t *testing.T) {
-	uh := service2.DB.Collection(service2.UsersCollectionName)
+	uh := service.DB.Collection(service.UsersCollectionName)
 	filter := bson.D{{"username", os.Getenv("TEST_REGISTER1")}}
 	_, err := uh.DeleteOne(context.Background(), filter)
 	if err != nil {
