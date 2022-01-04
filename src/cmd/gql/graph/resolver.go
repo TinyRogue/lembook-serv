@@ -1,3 +1,7 @@
 package graph
 
-type Resolver struct{}
+import "github.com/TinyRogue/lembook-serv/pkg/user"
+
+type Resolver struct {
+	UserService user.Service
+}

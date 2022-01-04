@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/TinyRogue/lembook-serv/pkg/jwt"
-	"github.com/TinyRogue/lembook-serv/pkg/user"
+	"github.com/TinyRogue/lembook-serv/pkg/mongo/user"
 	"log"
 	"net/http"
 )

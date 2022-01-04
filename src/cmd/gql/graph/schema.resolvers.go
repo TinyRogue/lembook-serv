@@ -13,11 +13,11 @@ import (
 	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated"
 	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
 	"github.com/TinyRogue/lembook-serv/pkg/middleware"
-	"github.com/TinyRogue/lembook-serv/pkg/user"
+	"github.com/TinyRogue/lembook-serv/pkg/mongo/user"
 )
 
 func (r *mutationResolver) Register(ctx context.Context, input model.Registration) (*model.Depiction, error) {
-	log.Println("Create new user request")
+	log.Println("Register new user request")
 	req := user.Registration{GQLRegistration: input}
 
 	if !user.IsPasswordValid(req.GQLRegistration.Password) {
@@ -25,7 +25,7 @@ func (r *mutationResolver) Register(ctx context.Context, input model.Registratio
 		return nil, user.InvalidPasswordRequest
 	}
 
-	err := req.Save(ctx)
+	err := r.UserService.Register(ctx, &req)
 	if err != nil {
 		log.Println("Could not create user due to: " + err.Error())
 		return nil, err
@@ -50,7 +50,7 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (*model
 	var u user.User
 	u.Username = input.Username
 	u.Password = input.Password
-	token, err := u.Login(ctx)
+	token, err := r.UserService.Login(ctx, &u)
 	if err != nil {
 		log.Println("Could not login user due to:" + err.Error())
 		return nil, err
