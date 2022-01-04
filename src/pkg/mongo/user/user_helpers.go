@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	service "github.com/TinyRogue/lembook-serv/pkg/mongo"
+	"github.com/TinyRogue/lembook-serv/pkg/user"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"unicode"
@@ -10,8 +11,8 @@ import (
 
 const minPasswordLen = 10
 
-func FindUserBy(ctx context.Context, by string, value interface{}) (*User, error) {
-	var res User
+func FindUserBy(ctx context.Context, by string, value interface{}) (*user.User, error) {
+	var res user.User
 	usersCollection := service.DB.Collection(service.UsersCollectionName)
 	err := usersCollection.FindOne(ctx, bson.M{by: value}).Decode(&res)
 	return &res, err

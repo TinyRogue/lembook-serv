@@ -3,12 +3,13 @@ package user
 import (
 	"context"
 	"github.com/TinyRogue/lembook-serv/pkg/hash"
+	"github.com/TinyRogue/lembook-serv/pkg/user"
 	nano "github.com/matoous/go-nanoid"
 )
 
-func (s *Service) Register(ctx context.Context, req *Registration) error {
+func (s *Service) Register(ctx context.Context, req *user.Registration) error {
 	if IsUsernameTaken(ctx, req.GQLRegistration.Username) {
-		return UserAlreadyExists
+		return user.AlreadyExists
 	}
 
 	hashedPassword, err := hash.BeautifyPassword(req.GQLRegistration.Password, nil)
@@ -16,7 +17,7 @@ func (s *Service) Register(ctx context.Context, req *Registration) error {
 		return err
 	}
 	UID, _ := nano.Nanoid()
-	newUser := User{
+	newUser := user.User{
 		UID:      UID,
 		Username: req.GQLRegistration.Username,
 		Password: hashedPassword,

@@ -2,6 +2,18 @@
 
 package model
 
+type Book struct {
+	Author      *string `json:"author"`
+	Title       *string `json:"title"`
+	Description *string `json:"description"`
+	CoverURL    *string `json:"coverURL"`
+	Genre       *string `json:"genre"`
+}
+
+type Books struct {
+	Books []*Book `json:"books"`
+}
+
 type Depiction struct {
 	Res *string `json:"res"`
 }
@@ -21,4 +33,10 @@ type User struct {
 	Username string    `json:"username"`
 	Password string    `json:"Password"`
 	Token    []*string `json:"Token"`
+}
+
+type WhatBook struct {
+	Author *string `json:"author"`
+	Title  *string `json:"title"`
+	Genre  *string `json:"genre"`
 }

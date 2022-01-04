@@ -1,4 +1,19 @@
-# This could be generified somehow
+input Registration {
+  username: String!
+  password: String!
+}
+
+input Login {
+  username: String!
+  password: String!
+}
+
+input WhatBook {
+  author: String
+  title: String
+  genre: String
+}
+
 type Depiction {
   res: String
 }
@@ -10,19 +25,22 @@ type User {
   Token: [String]
 }
 
-input Registration {
-  username: String!
-  password: String!
+type Book {
+  author: String
+  title: String
+  description: String
+  coverURL: String
+  genre: String
 }
 
-input Login {
-  username: String!
-  password: String!
+type Books {
+  books: [Book!]
 }
 
 type Query {
   ping: String!
   authorisedPing: String!
+  books(input: WhatBook): Books!
 }
 
 type Mutation {

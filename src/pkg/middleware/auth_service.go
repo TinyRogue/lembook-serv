@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"encoding/json"
+	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
 	"github.com/TinyRogue/lembook-serv/pkg/jwt"
 	"github.com/TinyRogue/lembook-serv/pkg/mongo/user"
 	"log"
@@ -62,9 +63,9 @@ func Auth(next http.Handler) http.Handler {
 	})
 }
 
-func FindUserByCtx(ctx context.Context) *user.User {
+func FindUserByCtx(ctx context.Context) *model.User {
 	raw, _ := ctx.Value(ContextUserKey).([]byte)
-	var u user.User
+	var u model.User
 	err := json.Unmarshal(raw, &u)
 	if err != nil {
 		log.Println("Couldn't unmarshall user due to ", err)

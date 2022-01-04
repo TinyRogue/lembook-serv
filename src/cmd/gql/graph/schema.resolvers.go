@@ -10,19 +10,20 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated"
+	generated1 "github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated"
 	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
 	"github.com/TinyRogue/lembook-serv/pkg/middleware"
-	"github.com/TinyRogue/lembook-serv/pkg/mongo/user"
+	uexec "github.com/TinyRogue/lembook-serv/pkg/mongo/user"
+	us "github.com/TinyRogue/lembook-serv/pkg/user"
 )
 
 func (r *mutationResolver) Register(ctx context.Context, input model.Registration) (*model.Depiction, error) {
 	log.Println("Register new user request")
-	req := user.Registration{GQLRegistration: input}
+	req := us.Registration{GQLRegistration: input}
 
-	if !user.IsPasswordValid(req.GQLRegistration.Password) {
-		log.Println("Could not create user due to: " + user.InvalidPasswordRequest.Error())
-		return nil, user.InvalidPasswordRequest
+	if !uexec.IsPasswordValid(req.GQLRegistration.Password) {
+		log.Println("Could not create user due to: " + us.InvalidPasswordRequest.Error())
+		return nil, us.InvalidPasswordRequest
 	}
 
 	err := r.UserService.Register(ctx, &req)
@@ -47,7 +48,7 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (*model
 	}
 
 	log.Println("Login request from " + input.Username)
-	var u user.User
+	var u us.User
 	u.Username = input.Username
 	u.Password = input.Password
 	token, err := r.UserService.Login(ctx, &u)
@@ -83,11 +84,19 @@ func (r *queryResolver) AuthorisedPing(ctx context.Context) (string, error) {
 	return "Pong", nil
 }
 
-// Mutation returns generated.MutationResolver implementation.
-func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
+func (r *queryResolver) Books(ctx context.Context, input *model.WhatBook) (*model.Books, error) {
+	books, err := r.BooksService.FindBooks(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+	return &books, nil
+}
 
-// Query returns generated.QueryResolver implementation.
-func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
+// Mutation returns generated1.MutationResolver implementation.
+func (r *Resolver) Mutation() generated1.MutationResolver { return &mutationResolver{r} }
+
+// Query returns generated1.QueryResolver implementation.
+func (r *Resolver) Query() generated1.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

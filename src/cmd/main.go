@@ -7,6 +7,7 @@ import (
 	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated"
 	"github.com/TinyRogue/lembook-serv/pkg/middleware"
 	service "github.com/TinyRogue/lembook-serv/pkg/mongo"
+	"github.com/TinyRogue/lembook-serv/pkg/mongo/books"
 	"github.com/TinyRogue/lembook-serv/pkg/mongo/user"
 	"github.com/joho/godotenv"
 	"log"
@@ -29,9 +30,11 @@ func main() {
 	defer service.Disconnect()
 
 	userService := user.Service{UsersCollection: service.DB.Collection(service.UsersCollectionName)}
+	booksService := books.Service{}
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
-		UserService: &userService,
+		UserService:  &userService,
+		BooksService: &booksService,
 	}}))
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", middleware.Cors(middleware.Auth(srv), mode))
