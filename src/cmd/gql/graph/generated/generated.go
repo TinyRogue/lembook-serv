@@ -51,8 +51,9 @@ type ComplexityRoot struct {
 		Title       func(childComplexity int) int
 	}
 
-	Books struct {
+	CategorizedBooks struct {
 		Books func(childComplexity int) int
+		Genre func(childComplexity int) int
 	}
 
 	Depiction struct {
@@ -66,7 +67,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		AuthorisedPing func(childComplexity int) int
-		Books          func(childComplexity int, input *model.WhatBook) int
+		Books          func(childComplexity int, input *model.UserID) int
 		Ping           func(childComplexity int) int
 	}
 
@@ -75,6 +76,10 @@ type ComplexityRoot struct {
 		Token    func(childComplexity int) int
 		UID      func(childComplexity int) int
 		Username func(childComplexity int) int
+	}
+
+	UsersBooks struct {
+		Slices func(childComplexity int) int
 	}
 }
 
@@ -85,7 +90,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Ping(ctx context.Context) (string, error)
 	AuthorisedPing(ctx context.Context) (string, error)
-	Books(ctx context.Context, input *model.WhatBook) (*model.Books, error)
+	Books(ctx context.Context, input *model.UserID) (*model.UsersBooks, error)
 }
 
 type executableSchema struct {
@@ -138,12 +143,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Book.Title(childComplexity), true
 
-	case "Books.books":
-		if e.complexity.Books.Books == nil {
+	case "CategorizedBooks.books":
+		if e.complexity.CategorizedBooks.Books == nil {
 			break
 		}
 
-		return e.complexity.Books.Books(childComplexity), true
+		return e.complexity.CategorizedBooks.Books(childComplexity), true
+
+	case "CategorizedBooks.genre":
+		if e.complexity.CategorizedBooks.Genre == nil {
+			break
+		}
+
+		return e.complexity.CategorizedBooks.Genre(childComplexity), true
 
 	case "Depiction.res":
 		if e.complexity.Depiction.Res == nil {
@@ -193,7 +205,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Books(childComplexity, args["input"].(*model.WhatBook)), true
+		return e.complexity.Query.Books(childComplexity, args["input"].(*model.UserID)), true
 
 	case "Query.ping":
 		if e.complexity.Query.Ping == nil {
@@ -229,6 +241,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Username(childComplexity), true
+
+	case "UsersBooks.slices":
+		if e.complexity.UsersBooks.Slices == nil {
+			break
+		}
+
+		return e.complexity.UsersBooks.Slices(childComplexity), true
 
 	}
 	return 0, false
@@ -304,11 +323,15 @@ input Login {
   password: String!
 }
 
-input WhatBook {
-  author: String
-  title: String
-  genre: String
+input UserID {
+  id: String!
 }
+
+#input WhatBook {
+#  author: String
+#  title: String
+#  genre: String
+#}
 
 type Depiction {
   res: String
@@ -329,14 +352,19 @@ type Book {
   genre: String
 }
 
-type Books {
+type CategorizedBooks {
+  genre: String!
   books: [Book!]
+}
+
+type UsersBooks {
+  slices: [CategorizedBooks!]
 }
 
 type Query {
   ping: String!
   authorisedPing: String!
-  books(input: WhatBook): Books!
+  books(input: UserID): UsersBooks!
 }
 
 type Mutation {
@@ -398,10 +426,10 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_books_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.WhatBook
+	var arg0 *model.UserID
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOWhatBook2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐWhatBook(ctx, tmp)
+		arg0, err = ec.unmarshalOUserID2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐUserID(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -608,7 +636,7 @@ func (ec *executionContext) _Book_genre(ctx context.Context, field graphql.Colle
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Books_books(ctx context.Context, field graphql.CollectedField, obj *model.Books) (ret graphql.Marshaler) {
+func (ec *executionContext) _CategorizedBooks_genre(ctx context.Context, field graphql.CollectedField, obj *model.CategorizedBooks) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -616,7 +644,42 @@ func (ec *executionContext) _Books_books(ctx context.Context, field graphql.Coll
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "Books",
+		Object:     "CategorizedBooks",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Genre, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CategorizedBooks_books(ctx context.Context, field graphql.CollectedField, obj *model.CategorizedBooks) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CategorizedBooks",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -851,7 +914,7 @@ func (ec *executionContext) _Query_books(ctx context.Context, field graphql.Coll
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Books(rctx, args["input"].(*model.WhatBook))
+		return ec.resolvers.Query().Books(rctx, args["input"].(*model.UserID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -863,9 +926,9 @@ func (ec *executionContext) _Query_books(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Books)
+	res := resTmp.(*model.UsersBooks)
 	fc.Result = res
-	return ec.marshalNBooks2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐBooks(ctx, field.Selections, res)
+	return ec.marshalNUsersBooks2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐUsersBooks(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1074,6 +1137,38 @@ func (ec *executionContext) _User_Token(ctx context.Context, field graphql.Colle
 	res := resTmp.([]*string)
 	fc.Result = res
 	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UsersBooks_slices(ctx context.Context, field graphql.CollectedField, obj *model.UsersBooks) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UsersBooks",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Slices, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.CategorizedBooks)
+	fc.Result = res
+	return ec.marshalOCategorizedBooks2ᚕᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐCategorizedBooksᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -2260,8 +2355,8 @@ func (ec *executionContext) unmarshalInputRegistration(ctx context.Context, obj 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputWhatBook(ctx context.Context, obj interface{}) (model.WhatBook, error) {
-	var it model.WhatBook
+func (ec *executionContext) unmarshalInputUserID(ctx context.Context, obj interface{}) (model.UserID, error) {
+	var it model.UserID
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -2269,27 +2364,11 @@ func (ec *executionContext) unmarshalInputWhatBook(ctx context.Context, obj inte
 
 	for k, v := range asMap {
 		switch k {
-		case "author":
+		case "id":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("author"))
-			it.Author, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "title":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
-			it.Title, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "genre":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("genre"))
-			it.Genre, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2339,19 +2418,24 @@ func (ec *executionContext) _Book(ctx context.Context, sel ast.SelectionSet, obj
 	return out
 }
 
-var booksImplementors = []string{"Books"}
+var categorizedBooksImplementors = []string{"CategorizedBooks"}
 
-func (ec *executionContext) _Books(ctx context.Context, sel ast.SelectionSet, obj *model.Books) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, booksImplementors)
+func (ec *executionContext) _CategorizedBooks(ctx context.Context, sel ast.SelectionSet, obj *model.CategorizedBooks) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, categorizedBooksImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("Books")
+			out.Values[i] = graphql.MarshalString("CategorizedBooks")
+		case "genre":
+			out.Values[i] = ec._CategorizedBooks_genre(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "books":
-			out.Values[i] = ec._Books_books(ctx, field, obj)
+			out.Values[i] = ec._CategorizedBooks_books(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2523,6 +2607,30 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "Token":
 			out.Values[i] = ec._User_Token(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var usersBooksImplementors = []string{"UsersBooks"}
+
+func (ec *executionContext) _UsersBooks(ctx context.Context, sel ast.SelectionSet, obj *model.UsersBooks) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, usersBooksImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UsersBooks")
+		case "slices":
+			out.Values[i] = ec._UsersBooks_slices(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2794,20 +2902,6 @@ func (ec *executionContext) marshalNBook2ᚖgithubᚗcomᚋTinyRogueᚋlembook�
 	return ec._Book(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNBooks2githubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐBooks(ctx context.Context, sel ast.SelectionSet, v model.Books) graphql.Marshaler {
-	return ec._Books(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNBooks2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐBooks(ctx context.Context, sel ast.SelectionSet, v *model.Books) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Books(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -2821,6 +2915,16 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNCategorizedBooks2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐCategorizedBooks(ctx context.Context, sel ast.SelectionSet, v *model.CategorizedBooks) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._CategorizedBooks(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNDepiction2githubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐDepiction(ctx context.Context, sel ast.SelectionSet, v model.Depiction) graphql.Marshaler {
@@ -2860,6 +2964,20 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNUsersBooks2githubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐUsersBooks(ctx context.Context, sel ast.SelectionSet, v model.UsersBooks) graphql.Marshaler {
+	return ec._UsersBooks(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUsersBooks2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐUsersBooks(ctx context.Context, sel ast.SelectionSet, v *model.UsersBooks) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._UsersBooks(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -3190,6 +3308,53 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
+func (ec *executionContext) marshalOCategorizedBooks2ᚕᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐCategorizedBooksᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CategorizedBooks) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNCategorizedBooks2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐCategorizedBooks(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3250,11 +3415,11 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return graphql.MarshalString(*v)
 }
 
-func (ec *executionContext) unmarshalOWhatBook2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐWhatBook(ctx context.Context, v interface{}) (*model.WhatBook, error) {
+func (ec *executionContext) unmarshalOUserID2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐUserID(ctx context.Context, v interface{}) (*model.UserID, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalInputWhatBook(ctx, v)
+	res, err := ec.unmarshalInputUserID(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

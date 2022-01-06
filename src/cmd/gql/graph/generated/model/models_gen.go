@@ -10,7 +10,8 @@ type Book struct {
 	Genre       *string `json:"genre"`
 }
 
-type Books struct {
+type CategorizedBooks struct {
+	Genre string  `json:"genre"`
 	Books []*Book `json:"books"`
 }
 
@@ -35,8 +36,10 @@ type User struct {
 	Token    []*string `json:"Token"`
 }
 
-type WhatBook struct {
-	Author *string `json:"author"`
-	Title  *string `json:"title"`
-	Genre  *string `json:"genre"`
+type UserID struct {
+	ID string `json:"id"`
+}
+
+type UsersBooks struct {
+	Slices []*CategorizedBooks `json:"slices"`
 }

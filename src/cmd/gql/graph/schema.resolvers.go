@@ -10,7 +10,7 @@ import (
 	"log"
 	"net/http"
 
-	generated1 "github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated"
+	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated"
 	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
 	"github.com/TinyRogue/lembook-serv/pkg/middleware"
 	uexec "github.com/TinyRogue/lembook-serv/pkg/mongo/user"
@@ -84,19 +84,19 @@ func (r *queryResolver) AuthorisedPing(ctx context.Context) (string, error) {
 	return "Pong", nil
 }
 
-func (r *queryResolver) Books(ctx context.Context, input *model.WhatBook) (*model.Books, error) {
-	books, err := r.BooksService.FindBooks(ctx, input)
+func (r *queryResolver) Books(ctx context.Context, input *model.UserID) (*model.UsersBooks, error) {
+	books, err := r.BooksService.FindBooks(ctx, &input.ID)
 	if err != nil {
 		return nil, err
 	}
 	return &books, nil
 }
 
-// Mutation returns generated1.MutationResolver implementation.
-func (r *Resolver) Mutation() generated1.MutationResolver { return &mutationResolver{r} }
+// Mutation returns generated.MutationResolver implementation.
+func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
-// Query returns generated1.QueryResolver implementation.
-func (r *Resolver) Query() generated1.QueryResolver { return &queryResolver{r} }
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

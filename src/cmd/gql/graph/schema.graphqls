@@ -8,11 +8,15 @@ input Login {
   password: String!
 }
 
-input WhatBook {
-  author: String
-  title: String
-  genre: String
+input UserID {
+  id: String!
 }
+
+#input WhatBook {
+#  author: String
+#  title: String
+#  genre: String
+#}
 
 type Depiction {
   res: String
@@ -33,14 +37,19 @@ type Book {
   genre: String
 }
 
-type Books {
+type CategorizedBooks {
+  genre: String!
   books: [Book!]
+}
+
+type UsersBooks {
+  slices: [CategorizedBooks!]
 }
 
 type Query {
   ping: String!
   authorisedPing: String!
-  books(input: WhatBook): Books!
+  books(input: UserID): UsersBooks!
 }
 
 type Mutation {

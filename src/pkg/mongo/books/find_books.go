@@ -25,10 +25,10 @@ var (
 	genres = []string{"Science-Fiction", "Powieść", "Fantasy", "Polska", "Polska"}
 )
 
-func (s *Service) FindBooks(ctx context.Context, b *model.WhatBook) (model.Books, error) {
-	var templateBooks model.Books
+func (s *Service) FindBooks(ctx context.Context, userID *string) (model.UsersBooks, error) {
+	var templateBooks []*model.Book
 	for i, author := range authors {
-		templateBooks.Books = append(templateBooks.Books, &model.Book{
+		templateBooks = append(templateBooks, &model.Book{
 			Author:      &author,
 			Title:       &titles[i],
 			Description: &descriptions[i],
@@ -36,5 +36,14 @@ func (s *Service) FindBooks(ctx context.Context, b *model.WhatBook) (model.Books
 			Genre:       &genres[i],
 		})
 	}
-	return templateBooks, nil
+
+	bookSlice := model.CategorizedBooks{
+		Genre: "Science-Fiction",
+		Books: templateBooks,
+	}
+
+	usersBooks := model.UsersBooks{
+		Slices: []*model.CategorizedBooks{&bookSlice},
+	}
+	return usersBooks, nil
 }

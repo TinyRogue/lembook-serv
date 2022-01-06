@@ -6,5 +6,5 @@ import (
 )
 
 type Service interface {
-	FindBooks(ctx context.Context, b *model.WhatBook) (model.Books, error)
+	FindBooks(ctx context.Context, userID *string) (model.UsersBooks, error)
 }
