@@ -66,10 +66,17 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (*model
 		Domain:   "localhost",
 	})
 
-	msg := "success"
 	return &model.Depiction{
-		Res: &msg,
+		Res: &u.UID,
 	}, nil
+}
+
+func (r *mutationResolver) LoginWithJwt(ctx context.Context) (*model.UserMeta, error) {
+	u := middleware.FindUserByCtx(ctx)
+	if u == nil {
+		return nil, fmt.Errorf("access denied")
+	}
+	return &model.UserMeta{UID: u.UID, Username: u.Username}, nil
 }
 
 func (r *queryResolver) Ping(ctx context.Context) (string, error) {

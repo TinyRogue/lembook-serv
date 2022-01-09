@@ -49,6 +49,7 @@ type ComplexityRoot struct {
 		Description func(childComplexity int) int
 		Genre       func(childComplexity int) int
 		Title       func(childComplexity int) int
+		UID         func(childComplexity int) int
 	}
 
 	CategorizedBooks struct {
@@ -61,8 +62,9 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		Login    func(childComplexity int, input model.Login) int
-		Register func(childComplexity int, input model.Registration) int
+		Login        func(childComplexity int, input model.Login) int
+		LoginWithJwt func(childComplexity int) int
+		Register     func(childComplexity int, input model.Registration) int
 	}
 
 	Query struct {
@@ -78,6 +80,11 @@ type ComplexityRoot struct {
 		Username func(childComplexity int) int
 	}
 
+	UserMeta struct {
+		UID      func(childComplexity int) int
+		Username func(childComplexity int) int
+	}
+
 	UsersBooks struct {
 		Slices func(childComplexity int) int
 	}
@@ -86,6 +93,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	Register(ctx context.Context, input model.Registration) (*model.Depiction, error)
 	Login(ctx context.Context, input model.Login) (*model.Depiction, error)
+	LoginWithJwt(ctx context.Context) (*model.UserMeta, error)
 }
 type QueryResolver interface {
 	Ping(ctx context.Context) (string, error)
@@ -143,6 +151,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Book.Title(childComplexity), true
 
+	case "Book.uid":
+		if e.complexity.Book.UID == nil {
+			break
+		}
+
+		return e.complexity.Book.UID(childComplexity), true
+
 	case "CategorizedBooks.books":
 		if e.complexity.CategorizedBooks.Books == nil {
 			break
@@ -175,6 +190,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.Login(childComplexity, args["input"].(model.Login)), true
+
+	case "Mutation.loginWithJWT":
+		if e.complexity.Mutation.LoginWithJwt == nil {
+			break
+		}
+
+		return e.complexity.Mutation.LoginWithJwt(childComplexity), true
 
 	case "Mutation.register":
 		if e.complexity.Mutation.Register == nil {
@@ -235,12 +257,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.UID(childComplexity), true
 
-	case "User.username":
+	case "User.Username":
 		if e.complexity.User.Username == nil {
 			break
 		}
 
 		return e.complexity.User.Username(childComplexity), true
+
+	case "UserMeta.UID":
+		if e.complexity.UserMeta.UID == nil {
+			break
+		}
+
+		return e.complexity.UserMeta.UID(childComplexity), true
+
+	case "UserMeta.Username":
+		if e.complexity.UserMeta.Username == nil {
+			break
+		}
+
+		return e.complexity.UserMeta.Username(childComplexity), true
 
 	case "UsersBooks.slices":
 		if e.complexity.UsersBooks.Slices == nil {
@@ -337,14 +373,20 @@ type Depiction {
   res: String
 }
 
+type UserMeta {
+  UID: String!
+  Username: String!
+}
+
 type User {
   UID: String!
-  username: String!
+  Username: String!
   Password: String!
   Token: [String]
 }
 
 type Book {
+  uid: String!
   author: String
   title: String
   description: String
@@ -370,6 +412,7 @@ type Query {
 type Mutation {
   register(input: Registration!): Depiction!
   login(input: Login!): Depiction!
+  loginWithJWT: UserMeta!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -475,6 +518,41 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _Book_uid(ctx context.Context, field graphql.CollectedField, obj *model.Book) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Book",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
 
 func (ec *executionContext) _Book_author(ctx context.Context, field graphql.CollectedField, obj *model.Book) (ret graphql.Marshaler) {
 	defer func() {
@@ -819,6 +897,41 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 	return ec.marshalNDepiction2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐDepiction(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_loginWithJWT(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().LoginWithJwt(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.UserMeta)
+	fc.Result = res
+	return ec.marshalNUserMeta2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐUserMeta(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_ping(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1037,7 +1150,7 @@ func (ec *executionContext) _User_UID(ctx context.Context, field graphql.Collect
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_username(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+func (ec *executionContext) _User_Username(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1137,6 +1250,76 @@ func (ec *executionContext) _User_Token(ctx context.Context, field graphql.Colle
 	res := resTmp.([]*string)
 	fc.Result = res
 	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserMeta_UID(ctx context.Context, field graphql.CollectedField, obj *model.UserMeta) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserMeta",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserMeta_Username(ctx context.Context, field graphql.CollectedField, obj *model.UserMeta) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "UserMeta",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Username, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _UsersBooks_slices(ctx context.Context, field graphql.CollectedField, obj *model.UsersBooks) (ret graphql.Marshaler) {
@@ -2397,6 +2580,11 @@ func (ec *executionContext) _Book(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Book")
+		case "uid":
+			out.Values[i] = ec._Book_uid(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "author":
 			out.Values[i] = ec._Book_author(ctx, field, obj)
 		case "title":
@@ -2493,6 +2681,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "login":
 			out.Values[i] = ec._Mutation_login(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "loginWithJWT":
+			out.Values[i] = ec._Mutation_loginWithJWT(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2595,8 +2788,8 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "username":
-			out.Values[i] = ec._User_username(ctx, field, obj)
+		case "Username":
+			out.Values[i] = ec._User_Username(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2607,6 +2800,38 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "Token":
 			out.Values[i] = ec._User_Token(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var userMetaImplementors = []string{"UserMeta"}
+
+func (ec *executionContext) _UserMeta(ctx context.Context, sel ast.SelectionSet, obj *model.UserMeta) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, userMetaImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UserMeta")
+		case "UID":
+			out.Values[i] = ec._UserMeta_UID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "Username":
+			out.Values[i] = ec._UserMeta_Username(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2964,6 +3189,20 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNUserMeta2githubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐUserMeta(ctx context.Context, sel ast.SelectionSet, v model.UserMeta) graphql.Marshaler {
+	return ec._UserMeta(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUserMeta2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐUserMeta(ctx context.Context, sel ast.SelectionSet, v *model.UserMeta) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._UserMeta(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNUsersBooks2githubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐUsersBooks(ctx context.Context, sel ast.SelectionSet, v model.UsersBooks) graphql.Marshaler {

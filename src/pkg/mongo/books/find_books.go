@@ -3,6 +3,7 @@ package books
 import (
 	"context"
 	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
+	nano "github.com/matoous/go-nanoid"
 )
 
 var (
@@ -28,7 +29,9 @@ var (
 func (s *Service) FindBooks(ctx context.Context, userID *string) (model.UsersBooks, error) {
 	var templateBooks []*model.Book
 	for i, author := range authors {
+		uid, _ := nano.Nanoid()
 		templateBooks = append(templateBooks, &model.Book{
+			UID:         uid,
 			Author:      &author,
 			Title:       &titles[i],
 			Description: &descriptions[i],

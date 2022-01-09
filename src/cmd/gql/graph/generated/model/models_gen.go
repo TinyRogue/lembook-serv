@@ -3,6 +3,7 @@
 package model
 
 type Book struct {
+	UID         string  `json:"uid"`
 	Author      *string `json:"author"`
 	Title       *string `json:"title"`
 	Description *string `json:"description"`
@@ -31,13 +32,18 @@ type Registration struct {
 
 type User struct {
 	UID      string    `json:"UID"`
-	Username string    `json:"username"`
+	Username string    `json:"Username"`
 	Password string    `json:"Password"`
 	Token    []*string `json:"Token"`
 }
 
 type UserID struct {
 	ID string `json:"id"`
+}
+
+type UserMeta struct {
+	UID      string `json:"UID"`
+	Username string `json:"Username"`
 }
 
 type UsersBooks struct {

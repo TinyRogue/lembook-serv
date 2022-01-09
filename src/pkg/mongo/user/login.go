@@ -27,6 +27,7 @@ func (s *Service) Login(ctx context.Context, u *user.User) (*string, error) {
 	}
 
 	token, err := s.AssignNewToken(ctx, dbUser)
+	u.UID = dbUser.UID
 	if err != nil {
 		return nil, err
 	}
