@@ -46,7 +46,7 @@ func (s *Service) FindBooks(ctx context.Context, userID *string) (model.UsersBoo
 	}
 
 	usersBooks := model.UsersBooks{
-		Slices: []*model.CategorizedBooks{&bookSlice},
+		Slices: []*model.CategorizedBooks{&bookSlice, &bookSlice, &bookSlice},
 	}
 	return usersBooks, nil
 }

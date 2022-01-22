@@ -61,6 +61,16 @@ type ComplexityRoot struct {
 		Res func(childComplexity int) int
 	}
 
+	Genre struct {
+		Liked func(childComplexity int) int
+		Name  func(childComplexity int) int
+		UID   func(childComplexity int) int
+	}
+
+	Genres struct {
+		Genres func(childComplexity int) int
+	}
+
 	Mutation struct {
 		Login        func(childComplexity int, input model.Login) int
 		LoginWithJwt func(childComplexity int) int
@@ -70,14 +80,19 @@ type ComplexityRoot struct {
 	Query struct {
 		AuthorisedPing func(childComplexity int) int
 		Books          func(childComplexity int, input *model.UserID) int
+		Genres         func(childComplexity int, input *model.UserID) int
 		Ping           func(childComplexity int) int
 	}
 
 	User struct {
-		Password func(childComplexity int) int
-		Token    func(childComplexity int) int
-		UID      func(childComplexity int) int
-		Username func(childComplexity int) int
+		DislikedBooks func(childComplexity int) int
+		LikedBooks    func(childComplexity int) int
+		LikedGenres   func(childComplexity int) int
+		Password      func(childComplexity int) int
+		Token         func(childComplexity int) int
+		UID           func(childComplexity int) int
+		Username      func(childComplexity int) int
+		WillingToRead func(childComplexity int) int
 	}
 
 	UserMeta struct {
@@ -99,6 +114,7 @@ type QueryResolver interface {
 	Ping(ctx context.Context) (string, error)
 	AuthorisedPing(ctx context.Context) (string, error)
 	Books(ctx context.Context, input *model.UserID) (*model.UsersBooks, error)
+	Genres(ctx context.Context, input *model.UserID) (*model.Genres, error)
 }
 
 type executableSchema struct {
@@ -179,6 +195,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Depiction.Res(childComplexity), true
 
+	case "Genre.liked":
+		if e.complexity.Genre.Liked == nil {
+			break
+		}
+
+		return e.complexity.Genre.Liked(childComplexity), true
+
+	case "Genre.name":
+		if e.complexity.Genre.Name == nil {
+			break
+		}
+
+		return e.complexity.Genre.Name(childComplexity), true
+
+	case "Genre.uid":
+		if e.complexity.Genre.UID == nil {
+			break
+		}
+
+		return e.complexity.Genre.UID(childComplexity), true
+
+	case "Genres.genres":
+		if e.complexity.Genres.Genres == nil {
+			break
+		}
+
+		return e.complexity.Genres.Genres(childComplexity), true
+
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
 			break
@@ -229,12 +273,45 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Books(childComplexity, args["input"].(*model.UserID)), true
 
+	case "Query.genres":
+		if e.complexity.Query.Genres == nil {
+			break
+		}
+
+		args, err := ec.field_Query_genres_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Genres(childComplexity, args["input"].(*model.UserID)), true
+
 	case "Query.ping":
 		if e.complexity.Query.Ping == nil {
 			break
 		}
 
 		return e.complexity.Query.Ping(childComplexity), true
+
+	case "User.DislikedBooks":
+		if e.complexity.User.DislikedBooks == nil {
+			break
+		}
+
+		return e.complexity.User.DislikedBooks(childComplexity), true
+
+	case "User.LikedBooks":
+		if e.complexity.User.LikedBooks == nil {
+			break
+		}
+
+		return e.complexity.User.LikedBooks(childComplexity), true
+
+	case "User.LikedGenres":
+		if e.complexity.User.LikedGenres == nil {
+			break
+		}
+
+		return e.complexity.User.LikedGenres(childComplexity), true
 
 	case "User.Password":
 		if e.complexity.User.Password == nil {
@@ -263,6 +340,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Username(childComplexity), true
+
+	case "User.WillingToRead":
+		if e.complexity.User.WillingToRead == nil {
+			break
+		}
+
+		return e.complexity.User.WillingToRead(childComplexity), true
 
 	case "UserMeta.UID":
 		if e.complexity.UserMeta.UID == nil {
@@ -383,6 +467,10 @@ type User {
   Username: String!
   Password: String!
   Token: [String]
+  LikedBooks: [String]
+  WillingToRead: [String]
+  DislikedBooks: [String]
+  LikedGenres: [String]
 }
 
 type Book {
@@ -403,10 +491,21 @@ type UsersBooks {
   slices: [CategorizedBooks!]
 }
 
+type Genre {
+  uid: String!
+  name: String!
+  liked: Boolean!
+}
+
+type Genres {
+  genres: [Genre]!
+}
+
 type Query {
   ping: String!
   authorisedPing: String!
   books(input: UserID): UsersBooks!
+  genres(input: UserID): Genres
 }
 
 type Mutation {
@@ -467,6 +566,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 }
 
 func (ec *executionContext) field_Query_books_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.UserID
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOUserID2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐUserID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_genres_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *model.UserID
@@ -813,6 +927,146 @@ func (ec *executionContext) _Depiction_res(ctx context.Context, field graphql.Co
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Genre_uid(ctx context.Context, field graphql.CollectedField, obj *model.Genre) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Genre",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Genre_name(ctx context.Context, field graphql.CollectedField, obj *model.Genre) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Genre",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Genre_liked(ctx context.Context, field graphql.CollectedField, obj *model.Genre) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Genre",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Liked, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Genres_genres(ctx context.Context, field graphql.CollectedField, obj *model.Genres) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Genres",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Genres, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Genre)
+	fc.Result = res
+	return ec.marshalNGenre2ᚕᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐGenre(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_register(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1044,6 +1298,45 @@ func (ec *executionContext) _Query_books(ctx context.Context, field graphql.Coll
 	return ec.marshalNUsersBooks2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐUsersBooks(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_genres(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_genres_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Genres(rctx, args["input"].(*model.UserID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Genres)
+	fc.Result = res
+	return ec.marshalOGenres2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐGenres(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1239,6 +1532,134 @@ func (ec *executionContext) _User_Token(ctx context.Context, field graphql.Colle
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Token, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_LikedBooks(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LikedBooks, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_WillingToRead(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.WillingToRead, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_DislikedBooks(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DislikedBooks, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_LikedGenres(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LikedGenres, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2659,6 +3080,70 @@ func (ec *executionContext) _Depiction(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
+var genreImplementors = []string{"Genre"}
+
+func (ec *executionContext) _Genre(ctx context.Context, sel ast.SelectionSet, obj *model.Genre) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, genreImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Genre")
+		case "uid":
+			out.Values[i] = ec._Genre_uid(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Genre_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "liked":
+			out.Values[i] = ec._Genre_liked(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var genresImplementors = []string{"Genres"}
+
+func (ec *executionContext) _Genres(ctx context.Context, sel ast.SelectionSet, obj *model.Genres) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, genresImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Genres")
+		case "genres":
+			out.Values[i] = ec._Genres_genres(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -2757,6 +3242,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "genres":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_genres(ctx, field)
+				return res
+			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
@@ -2800,6 +3296,14 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "Token":
 			out.Values[i] = ec._User_Token(ctx, field, obj)
+		case "LikedBooks":
+			out.Values[i] = ec._User_LikedBooks(ctx, field, obj)
+		case "WillingToRead":
+			out.Values[i] = ec._User_WillingToRead(ctx, field, obj)
+		case "DislikedBooks":
+			out.Values[i] = ec._User_DislikedBooks(ctx, field, obj)
+		case "LikedGenres":
+			out.Values[i] = ec._User_LikedGenres(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3164,6 +3668,44 @@ func (ec *executionContext) marshalNDepiction2ᚖgithubᚗcomᚋTinyRogueᚋlemb
 		return graphql.Null
 	}
 	return ec._Depiction(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNGenre2ᚕᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐGenre(ctx context.Context, sel ast.SelectionSet, v []*model.Genre) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOGenre2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐGenre(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalNLogin2githubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐLogin(ctx context.Context, v interface{}) (model.Login, error) {
@@ -3592,6 +4134,20 @@ func (ec *executionContext) marshalOCategorizedBooks2ᚕᚖgithubᚗcomᚋTinyRo
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalOGenre2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐGenre(ctx context.Context, sel ast.SelectionSet, v *model.Genre) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Genre(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOGenres2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐGenres(ctx context.Context, sel ast.SelectionSet, v *model.Genres) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Genres(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

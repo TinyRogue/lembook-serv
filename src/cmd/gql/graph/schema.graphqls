@@ -32,6 +32,10 @@ type User {
   Username: String!
   Password: String!
   Token: [String]
+  LikedBooks: [String]
+  WillingToRead: [String]
+  DislikedBooks: [String]
+  LikedGenres: [String]
 }
 
 type Book {
@@ -52,10 +56,21 @@ type UsersBooks {
   slices: [CategorizedBooks!]
 }
 
+type Genre {
+  uid: String!
+  name: String!
+  liked: Boolean!
+}
+
+type Genres {
+  genres: [Genre]!
+}
+
 type Query {
   ping: String!
   authorisedPing: String!
   books(input: UserID): UsersBooks!
+  genres(input: UserID): Genres
 }
 
 type Mutation {

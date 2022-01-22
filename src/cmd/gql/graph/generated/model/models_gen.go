@@ -20,6 +20,16 @@ type Depiction struct {
 	Res *string `json:"res"`
 }
 
+type Genre struct {
+	UID   string `json:"uid"`
+	Name  string `json:"name"`
+	Liked bool   `json:"liked"`
+}
+
+type Genres struct {
+	Genres []*Genre `json:"genres"`
+}
+
 type Login struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -31,10 +41,14 @@ type Registration struct {
 }
 
 type User struct {
-	UID      string    `json:"UID"`
-	Username string    `json:"Username"`
-	Password string    `json:"Password"`
-	Token    []*string `json:"Token"`
+	UID           string    `json:"UID"`
+	Username      string    `json:"Username"`
+	Password      string    `json:"Password"`
+	Token         []*string `json:"Token"`
+	LikedBooks    []*string `json:"LikedBooks"`
+	WillingToRead []*string `json:"WillingToRead"`
+	DislikedBooks []*string `json:"DislikedBooks"`
+	LikedGenres   []*string `json:"LikedGenres"`
 }
 
 type UserID struct {

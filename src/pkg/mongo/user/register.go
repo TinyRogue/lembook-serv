@@ -18,10 +18,14 @@ func (s *Service) Register(ctx context.Context, req *user.Registration) error {
 	}
 	UID, _ := nano.Nanoid()
 	newUser := user.User{
-		UID:      UID,
-		Username: req.GQLRegistration.Username,
-		Password: hashedPassword,
-		Token:    []*string{},
+		UID:           UID,
+		Username:      req.GQLRegistration.Username,
+		Password:      hashedPassword,
+		Token:         []*string{},
+		LikedBooks:    []*string{},
+		WillingToRead: []*string{},
+		DislikedBooks: []*string{},
+		LikedGenres:   []*string{},
 	}
 
 	_, err = s.UsersCollection.InsertOne(ctx, newUser)

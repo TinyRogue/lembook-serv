@@ -13,10 +13,14 @@ type Service interface {
 }
 
 type User struct {
-	UID      string    `json:"uid"`
-	Username string    `json:"username"`
-	Password string    `json:"Password"`
-	Token    []*string `json:"Token"`
+	UID           string    `json:"uid"`
+	Username      string    `json:"username"`
+	Password      string    `json:"Password"`
+	Token         []*string `json:"Token"`
+	LikedBooks    []*string `json:"liked_books"`
+	WillingToRead []*string `json:"willing_to_read"`
+	DislikedBooks []*string `json:"disliked_books"`
+	LikedGenres   []*string `json:"liked_genres"`
 }
 
 type Registration struct {

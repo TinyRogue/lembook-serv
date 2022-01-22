@@ -99,6 +99,10 @@ func (r *queryResolver) Books(ctx context.Context, input *model.UserID) (*model.
 	return &books, nil
 }
 
+func (r *queryResolver) Genres(ctx context.Context, input *model.UserID) (*model.Genres, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
