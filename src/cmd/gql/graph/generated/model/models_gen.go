@@ -21,7 +21,6 @@ type Depiction struct {
 }
 
 type Genre struct {
-	UID   string `json:"uid"`
 	Name  string `json:"name"`
 	Liked bool   `json:"liked"`
 }

@@ -17,6 +17,25 @@ import (
 	us "github.com/TinyRogue/lembook-serv/pkg/user"
 )
 
+func (r *mutationResolver) LikeGenre(ctx context.Context, input *string) (*model.Depiction, error) {
+	u := middleware.FindUserByCtx(ctx)
+	if u == nil {
+		log.Println("Attempt to access resource without privileges. Access Denied.")
+		return nil, fmt.Errorf("access denied")
+	}
+	err := r.BooksService.LikeGenre(ctx, input, &u.UID)
+	if err != nil {
+		log.Printf("Could not like the genre due to: %v\n", err.Error())
+		return nil, err
+	}
+
+	msg := "Successfully liked the genre: " + *input
+	res := model.Depiction{
+		Res: &msg,
+	}
+	return &res, nil
+}
+
 func (r *mutationResolver) Register(ctx context.Context, input model.Registration) (*model.Depiction, error) {
 	log.Println("Register new user request")
 	req := us.Registration{GQLRegistration: input}
@@ -74,6 +93,7 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (*model
 func (r *mutationResolver) LoginWithJwt(ctx context.Context) (*model.UserMeta, error) {
 	u := middleware.FindUserByCtx(ctx)
 	if u == nil {
+		log.Println("Attempt to access resource without privileges. Access Denied.")
 		return nil, fmt.Errorf("access denied")
 	}
 	return &model.UserMeta{UID: u.UID, Username: u.Username}, nil
@@ -86,6 +106,7 @@ func (r *queryResolver) Ping(ctx context.Context) (string, error) {
 func (r *queryResolver) AuthorisedPing(ctx context.Context) (string, error) {
 	u := middleware.FindUserByCtx(ctx)
 	if u == nil {
+		log.Println("Attempt to access resource without privileges. Access Denied.")
 		return "", fmt.Errorf("access denied")
 	}
 	return "Pong", nil
@@ -100,7 +121,17 @@ func (r *queryResolver) Books(ctx context.Context, input *model.UserID) (*model.
 }
 
 func (r *queryResolver) Genres(ctx context.Context, input *model.UserID) (*model.Genres, error) {
-	panic(fmt.Errorf("not implemented"))
+	u := middleware.FindUserByCtx(ctx)
+	if u == nil {
+		log.Println("Attempt to access resource without privileges. Access Denied.")
+		return nil, fmt.Errorf("access denied")
+	}
+	genres, err := r.BooksService.GetGenres(ctx, &input.ID)
+	if err != nil {
+		log.Printf("Could not fetch genres due to: %v\n", err.Error())
+		return nil, err
+	}
+	return genres, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

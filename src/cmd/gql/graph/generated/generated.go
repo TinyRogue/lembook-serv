@@ -64,7 +64,6 @@ type ComplexityRoot struct {
 	Genre struct {
 		Liked func(childComplexity int) int
 		Name  func(childComplexity int) int
-		UID   func(childComplexity int) int
 	}
 
 	Genres struct {
@@ -72,6 +71,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		LikeGenre    func(childComplexity int, input *string) int
 		Login        func(childComplexity int, input model.Login) int
 		LoginWithJwt func(childComplexity int) int
 		Register     func(childComplexity int, input model.Registration) int
@@ -106,6 +106,7 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
+	LikeGenre(ctx context.Context, input *string) (*model.Depiction, error)
 	Register(ctx context.Context, input model.Registration) (*model.Depiction, error)
 	Login(ctx context.Context, input model.Login) (*model.Depiction, error)
 	LoginWithJwt(ctx context.Context) (*model.UserMeta, error)
@@ -209,19 +210,24 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Genre.Name(childComplexity), true
 
-	case "Genre.uid":
-		if e.complexity.Genre.UID == nil {
-			break
-		}
-
-		return e.complexity.Genre.UID(childComplexity), true
-
 	case "Genres.genres":
 		if e.complexity.Genres.Genres == nil {
 			break
 		}
 
 		return e.complexity.Genres.Genres(childComplexity), true
+
+	case "Mutation.likeGenre":
+		if e.complexity.Mutation.LikeGenre == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_likeGenre_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.LikeGenre(childComplexity, args["input"].(*string)), true
 
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
@@ -492,7 +498,6 @@ type UsersBooks {
 }
 
 type Genre {
-  uid: String!
   name: String!
   liked: Boolean!
 }
@@ -505,10 +510,11 @@ type Query {
   ping: String!
   authorisedPing: String!
   books(input: UserID): UsersBooks!
-  genres(input: UserID): Genres
+  genres(input: UserID): Genres!
 }
 
 type Mutation {
+  likeGenre(input: String): Depiction!
   register(input: Registration!): Depiction!
   login(input: Login!): Depiction!
   loginWithJWT: UserMeta!
@@ -519,6 +525,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_likeGenre_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -927,41 +948,6 @@ func (ec *executionContext) _Depiction_res(ctx context.Context, field graphql.Co
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Genre_uid(ctx context.Context, field graphql.CollectedField, obj *model.Genre) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Genre",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.UID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Genre_name(ctx context.Context, field graphql.CollectedField, obj *model.Genre) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1065,6 +1051,48 @@ func (ec *executionContext) _Genres_genres(ctx context.Context, field graphql.Co
 	res := resTmp.([]*model.Genre)
 	fc.Result = res
 	return ec.marshalNGenre2ᚕᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐGenre(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_likeGenre(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_likeGenre_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().LikeGenre(rctx, args["input"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Depiction)
+	fc.Result = res
+	return ec.marshalNDepiction2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐDepiction(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_register(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1330,11 +1358,14 @@ func (ec *executionContext) _Query_genres(ctx context.Context, field graphql.Col
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*model.Genres)
 	fc.Result = res
-	return ec.marshalOGenres2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐGenres(ctx, field.Selections, res)
+	return ec.marshalNGenres2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐGenres(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3091,11 +3122,6 @@ func (ec *executionContext) _Genre(ctx context.Context, sel ast.SelectionSet, ob
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Genre")
-		case "uid":
-			out.Values[i] = ec._Genre_uid(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "name":
 			out.Values[i] = ec._Genre_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -3159,6 +3185,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
+		case "likeGenre":
+			out.Values[i] = ec._Mutation_likeGenre(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "register":
 			out.Values[i] = ec._Mutation_register(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -3251,6 +3282,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_genres(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "__type":
@@ -3708,6 +3742,20 @@ func (ec *executionContext) marshalNGenre2ᚕᚖgithubᚗcomᚋTinyRogueᚋlembo
 	return ret
 }
 
+func (ec *executionContext) marshalNGenres2githubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐGenres(ctx context.Context, sel ast.SelectionSet, v model.Genres) graphql.Marshaler {
+	return ec._Genres(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNGenres2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐGenres(ctx context.Context, sel ast.SelectionSet, v *model.Genres) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Genres(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNLogin2githubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐLogin(ctx context.Context, v interface{}) (model.Login, error) {
 	res, err := ec.unmarshalInputLogin(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4141,13 +4189,6 @@ func (ec *executionContext) marshalOGenre2ᚖgithubᚗcomᚋTinyRogueᚋlembook�
 		return graphql.Null
 	}
 	return ec._Genre(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOGenres2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐGenres(ctx context.Context, sel ast.SelectionSet, v *model.Genres) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Genres(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

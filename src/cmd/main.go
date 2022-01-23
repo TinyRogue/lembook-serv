@@ -30,7 +30,7 @@ func main() {
 	defer service.Disconnect()
 
 	userService := user.Service{UsersCollection: service.DB.Collection(service.UsersCollectionName)}
-	booksService := books.Service{}
+	booksService := books.Service{UsersCollection: service.DB.Collection(service.UsersCollectionName), BooksCollection: service.DB.Collection(service.BooksCollectionName), GenresCollection: service.DB.Collection(service.GenresCollectionName)}
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
 		UserService:  &userService,

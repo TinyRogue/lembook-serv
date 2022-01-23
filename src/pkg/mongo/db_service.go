@@ -10,8 +10,10 @@ import (
 )
 
 const (
-	Name                = "TheDB"
-	UsersCollectionName = "users"
+	Name                 = "TheDB"
+	UsersCollectionName  = "users"
+	BooksCollectionName  = "books"
+	GenresCollectionName = "genres"
 )
 
 var (

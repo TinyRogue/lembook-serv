@@ -57,7 +57,6 @@ type UsersBooks {
 }
 
 type Genre {
-  uid: String!
   name: String!
   liked: Boolean!
 }
@@ -70,10 +69,11 @@ type Query {
   ping: String!
   authorisedPing: String!
   books(input: UserID): UsersBooks!
-  genres(input: UserID): Genres
+  genres(input: UserID): Genres!
 }
 
 type Mutation {
+  likeGenre(input: String): Depiction!
   register(input: Registration!): Depiction!
   login(input: Login!): Depiction!
   loginWithJWT: UserMeta!
