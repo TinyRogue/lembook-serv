@@ -9,4 +9,5 @@ type Service interface {
 	FindBooks(ctx context.Context, userID *string) (model.UsersBooks, error)
 	GetGenres(ctx context.Context, userID *string) (*model.Genres, error)
 	LikeGenre(ctx context.Context, genre *string, userID *string) error
+	DislikeGenre(ctx context.Context, genre *string, userID *string) error
 }

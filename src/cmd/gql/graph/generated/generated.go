@@ -71,7 +71,8 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		LikeGenre    func(childComplexity int, input *string) int
+		DislikeGenre func(childComplexity int, input string) int
+		LikeGenre    func(childComplexity int, input string) int
 		Login        func(childComplexity int, input model.Login) int
 		LoginWithJwt func(childComplexity int) int
 		Register     func(childComplexity int, input model.Registration) int
@@ -106,7 +107,8 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	LikeGenre(ctx context.Context, input *string) (*model.Depiction, error)
+	LikeGenre(ctx context.Context, input string) (*model.Depiction, error)
+	DislikeGenre(ctx context.Context, input string) (*model.Depiction, error)
 	Register(ctx context.Context, input model.Registration) (*model.Depiction, error)
 	Login(ctx context.Context, input model.Login) (*model.Depiction, error)
 	LoginWithJwt(ctx context.Context) (*model.UserMeta, error)
@@ -217,6 +219,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Genres.Genres(childComplexity), true
 
+	case "Mutation.dislikeGenre":
+		if e.complexity.Mutation.DislikeGenre == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_dislikeGenre_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DislikeGenre(childComplexity, args["input"].(string)), true
+
 	case "Mutation.likeGenre":
 		if e.complexity.Mutation.LikeGenre == nil {
 			break
@@ -227,7 +241,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.LikeGenre(childComplexity, args["input"].(*string)), true
+		return e.complexity.Mutation.LikeGenre(childComplexity, args["input"].(string)), true
 
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
@@ -514,7 +528,8 @@ type Query {
 }
 
 type Mutation {
-  likeGenre(input: String): Depiction!
+  likeGenre(input: String!): Depiction!
+  dislikeGenre(input: String!): Depiction!
   register(input: Registration!): Depiction!
   login(input: Login!): Depiction!
   loginWithJWT: UserMeta!
@@ -526,13 +541,28 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
+func (ec *executionContext) field_Mutation_dislikeGenre_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_likeGenre_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
+	var arg0 string
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1078,7 +1108,49 @@ func (ec *executionContext) _Mutation_likeGenre(ctx context.Context, field graph
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().LikeGenre(rctx, args["input"].(*string))
+		return ec.resolvers.Mutation().LikeGenre(rctx, args["input"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Depiction)
+	fc.Result = res
+	return ec.marshalNDepiction2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐDepiction(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_dislikeGenre(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_dislikeGenre_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DislikeGenre(rctx, args["input"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3187,6 +3259,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = graphql.MarshalString("Mutation")
 		case "likeGenre":
 			out.Values[i] = ec._Mutation_likeGenre(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "dislikeGenre":
+			out.Values[i] = ec._Mutation_dislikeGenre(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

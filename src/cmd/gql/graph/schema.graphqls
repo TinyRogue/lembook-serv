@@ -73,7 +73,8 @@ type Query {
 }
 
 type Mutation {
-  likeGenre(input: String): Depiction!
+  likeGenre(input: String!): Depiction!
+  dislikeGenre(input: String!): Depiction!
   register(input: Registration!): Depiction!
   login(input: Login!): Depiction!
   loginWithJWT: UserMeta!

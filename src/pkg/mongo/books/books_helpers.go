@@ -3,13 +3,11 @@ package books
 import (
 	"context"
 	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
-	service "github.com/TinyRogue/lembook-serv/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func getAllGenres(ctx context.Context) (*model.Genres, error) {
-	usersCollection := service.DB.Collection(service.GenresCollectionName)
-	cursor, err := usersCollection.Find(ctx, bson.D{})
+func getAllGenres(ctx context.Context, s *Service) (*model.Genres, error) {
+	cursor, err := s.GenresCollection.Find(ctx, bson.D{})
 	if err != nil {
 		return nil, err
 	}
@@ -18,4 +16,13 @@ func getAllGenres(ctx context.Context) (*model.Genres, error) {
 		return nil, err
 	}
 	return &genres, nil
+}
+
+func getUserGenres(ctx context.Context, s *Service, userUID *string) (*[]*string, error) {
+	filter := bson.M{"uid": *userUID}
+	var user model.User
+	if err := s.UsersCollection.FindOne(ctx, filter).Decode(&user); err != nil {
+		return nil, err
+	}
+	return &user.LikedGenres, nil
 }

@@ -17,19 +17,42 @@ import (
 	us "github.com/TinyRogue/lembook-serv/pkg/user"
 )
 
-func (r *mutationResolver) LikeGenre(ctx context.Context, input *string) (*model.Depiction, error) {
+func (r *mutationResolver) LikeGenre(ctx context.Context, input string) (*model.Depiction, error) {
+	log.Printf("Like genre %s request.", input)
 	u := middleware.FindUserByCtx(ctx)
 	if u == nil {
 		log.Println("Attempt to access resource without privileges. Access Denied.")
 		return nil, fmt.Errorf("access denied")
 	}
-	err := r.BooksService.LikeGenre(ctx, input, &u.UID)
+	err := r.BooksService.LikeGenre(ctx, &input, &u.UID)
 	if err != nil {
 		log.Printf("Could not like the genre due to: %v\n", err.Error())
 		return nil, err
 	}
 
-	msg := "Successfully liked the genre: " + *input
+	msg := "Successfully liked the genre: " + input
+	log.Println(msg)
+	res := model.Depiction{
+		Res: &msg,
+	}
+	return &res, nil
+}
+
+func (r *mutationResolver) DislikeGenre(ctx context.Context, input string) (*model.Depiction, error) {
+	log.Printf("Dislike genre %s request.", input)
+	u := middleware.FindUserByCtx(ctx)
+	if u == nil {
+		log.Println("Attempt to access resource without privileges. Access Denied.")
+		return nil, fmt.Errorf("access denied")
+	}
+	err := r.BooksService.DislikeGenre(ctx, &input, &u.UID)
+	if err != nil {
+		log.Printf("Could not dislike the genre due to: %v\n", err.Error())
+		return nil, err
+	}
+
+	msg := "Successfully disliked the genre: " + input
+	log.Println(msg)
 	res := model.Depiction{
 		Res: &msg,
 	}
@@ -121,6 +144,7 @@ func (r *queryResolver) Books(ctx context.Context, input *model.UserID) (*model.
 }
 
 func (r *queryResolver) Genres(ctx context.Context, input *model.UserID) (*model.Genres, error) {
+	log.Println("Get genres request.")
 	u := middleware.FindUserByCtx(ctx)
 	if u == nil {
 		log.Println("Attempt to access resource without privileges. Access Denied.")
