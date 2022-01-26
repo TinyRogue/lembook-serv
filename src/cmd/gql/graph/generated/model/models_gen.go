@@ -3,12 +3,12 @@
 package model
 
 type Book struct {
-	UID         string  `json:"uid"`
-	Author      *string `json:"author"`
-	Title       *string `json:"title"`
-	Description *string `json:"description"`
-	CoverURL    *string `json:"coverURL"`
-	Genre       *string `json:"genre"`
+	UID         string    `json:"uid"`
+	Authors     []*string `json:"authors"`
+	Title       *string   `json:"title"`
+	Description *string   `json:"description"`
+	Cover       *int      `json:"cover"`
+	Genres      []*string `json:"genres"`
 }
 
 type CategorizedBooks struct {

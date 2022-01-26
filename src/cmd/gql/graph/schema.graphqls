@@ -40,11 +40,11 @@ type User {
 
 type Book {
   uid: String!
-  author: String
+  authors: [String]
   title: String
   description: String
-  coverURL: String
-  genre: String
+  cover: Int
+  genres: [String]
 }
 
 type CategorizedBooks {
@@ -73,6 +73,12 @@ type Query {
 }
 
 type Mutation {
+  loveBook(input: String!): Depiction!
+  dislikeBook(input: String!): Depiction!
+  addBookToWTR(input: String!): Depiction!
+  cancelLoveBook(input: String!): Depiction!
+  cancelDislikeBook(input: String!): Depiction!
+  cancelAddBookToWTR(input: String!): Depiction!
   likeGenre(input: String!): Depiction!
   dislikeGenre(input: String!): Depiction!
   register(input: Registration!): Depiction!

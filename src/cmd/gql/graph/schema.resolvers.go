@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated"
 	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
@@ -16,6 +17,138 @@ import (
 	uexec "github.com/TinyRogue/lembook-serv/pkg/mongo/user"
 	us "github.com/TinyRogue/lembook-serv/pkg/user"
 )
+
+func (r *mutationResolver) LoveBook(ctx context.Context, input string) (*model.Depiction, error) {
+	log.Printf("Love the book: %s request.", input)
+	u := middleware.FindUserByCtx(ctx)
+	if u == nil {
+		log.Println("Attempt to access resource without privileges. Access Denied.")
+		return nil, fmt.Errorf("access denied")
+	}
+
+	err := r.BooksService.LoveTheBook(ctx, &input, &u.UID)
+	if err != nil {
+		log.Printf("Could not love the book due to: %v\n", err.Error())
+		return nil, err
+	}
+
+	msg := "Successfully fell in love with the book: " + input
+	log.Println(msg)
+	res := model.Depiction{
+		Res: &msg,
+	}
+	return &res, nil
+}
+
+func (r *mutationResolver) DislikeBook(ctx context.Context, input string) (*model.Depiction, error) {
+	log.Printf("Dislike book: %s request.", input)
+	u := middleware.FindUserByCtx(ctx)
+	if u == nil {
+		log.Println("Attempt to access resource without privileges. Access Denied.")
+		return nil, fmt.Errorf("access denied")
+	}
+
+	err := r.BooksService.DislikeTheBook(ctx, &input, &u.UID)
+	if err != nil {
+		log.Printf("Could not dislike the book due to: %v\n", err.Error())
+		return nil, err
+	}
+
+	msg := "Successfully fulfilled the user with hatred about the book: " + input
+	log.Println(msg)
+	res := model.Depiction{
+		Res: &msg,
+	}
+	return &res, nil
+}
+
+func (r *mutationResolver) AddBookToWtr(ctx context.Context, input string) (*model.Depiction, error) {
+	log.Printf("Add book: %s to want to read list request.", input)
+	u := middleware.FindUserByCtx(ctx)
+	if u == nil {
+		log.Println("Attempt to access resource without privileges. Access Denied.")
+		return nil, fmt.Errorf("access denied")
+	}
+
+	err := r.BooksService.AddBookToWTR(ctx, &input, &u.UID)
+	if err != nil {
+		log.Printf("Could not add the book to the Want-To-Read list due to: %v\n", err.Error())
+		return nil, err
+	}
+
+	msg := "Successfully added the book to the Want-To-Read list: " + input
+	log.Println(msg)
+	res := model.Depiction{
+		Res: &msg,
+	}
+	return &res, nil
+}
+
+func (r *mutationResolver) CancelLoveBook(ctx context.Context, input string) (*model.Depiction, error) {
+	log.Printf("Cancel love the book: %s request.", input)
+	u := middleware.FindUserByCtx(ctx)
+	if u == nil {
+		log.Println("Attempt to access resource without privileges. Access Denied.")
+		return nil, fmt.Errorf("access denied")
+	}
+
+	err := r.BooksService.CancelLoveTheBook(ctx, &input, &u.UID)
+	if err != nil {
+		log.Printf("Could not cancel the love to the book due to: %v\n", err.Error())
+		return nil, err
+	}
+
+	msg := "Successfully cancelled love to the book: " + input
+	log.Println(msg)
+	res := model.Depiction{
+		Res: &msg,
+	}
+	return &res, nil
+}
+
+func (r *mutationResolver) CancelDislikeBook(ctx context.Context, input string) (*model.Depiction, error) {
+	log.Printf("Cancel dislike the book: %s request.", input)
+	u := middleware.FindUserByCtx(ctx)
+	if u == nil {
+		log.Println("Attempt to access resource without privileges. Access Denied.")
+		return nil, fmt.Errorf("access denied")
+	}
+
+	err := r.BooksService.CancelDislikeTheBook(ctx, &input, &u.UID)
+	if err != nil {
+		log.Printf("Could not cancel dislike the book due to: %v\n", err.Error())
+		return nil, err
+	}
+
+	msg := "Successfully cancelled dislike to the book: " + input
+	log.Println(msg)
+	res := model.Depiction{
+		Res: &msg,
+	}
+	return &res, nil
+}
+
+func (r *mutationResolver) CancelAddBookToWtr(ctx context.Context, input string) (*model.Depiction, error) {
+	log.Printf("Cancel adding the book to Want-To-Read list: %s request.", input)
+	u := middleware.FindUserByCtx(ctx)
+	if u == nil {
+		log.Println("Attempt to access resource without privileges. Access Denied.")
+		return nil, fmt.Errorf("access denied")
+	}
+
+	err := r.BooksService.CancelAddBookToWTR(ctx, &input, &u.UID)
+	if err != nil {
+		log.Printf("Could not cancel adding the book to WTR list due to: %v\n", err.Error())
+		return nil, err
+	}
+
+	msg := "Successfully cancelled adding the book to WTR: " + input
+	log.Println(msg)
+	res := model.Depiction{
+		Res: &msg,
+	}
+	return &res, nil
+}
 
 func (r *mutationResolver) LikeGenre(ctx context.Context, input string) (*model.Depiction, error) {
 	log.Printf("Like genre %s request.", input)
@@ -40,6 +173,7 @@ func (r *mutationResolver) LikeGenre(ctx context.Context, input string) (*model.
 
 func (r *mutationResolver) DislikeGenre(ctx context.Context, input string) (*model.Depiction, error) {
 	log.Printf("Dislike genre %s request.", input)
+	input = strings.ToLower(input)
 	u := middleware.FindUserByCtx(ctx)
 	if u == nil {
 		log.Println("Attempt to access resource without privileges. Access Denied.")
@@ -136,11 +270,18 @@ func (r *queryResolver) AuthorisedPing(ctx context.Context) (string, error) {
 }
 
 func (r *queryResolver) Books(ctx context.Context, input *model.UserID) (*model.UsersBooks, error) {
-	books, err := r.BooksService.FindBooks(ctx, &input.ID)
+	log.Printf("Get books request.")
+	u := middleware.FindUserByCtx(ctx)
+	if u == nil {
+		log.Println("Attempt to access resource without privileges. Access Denied.")
+		return nil, fmt.Errorf("access denied")
+	}
+	books, err := r.BooksService.GetCategorizedBooks(ctx, &input.ID)
 	if err != nil {
+		log.Printf("Could not retrieve books due to: %v\n", err.Error())
 		return nil, err
 	}
-	return &books, nil
+	return books, nil
 }
 
 func (r *queryResolver) Genres(ctx context.Context, input *model.UserID) (*model.Genres, error) {

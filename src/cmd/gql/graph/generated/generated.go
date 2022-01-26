@@ -44,10 +44,10 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Book struct {
-		Author      func(childComplexity int) int
-		CoverURL    func(childComplexity int) int
+		Authors     func(childComplexity int) int
+		Cover       func(childComplexity int) int
 		Description func(childComplexity int) int
-		Genre       func(childComplexity int) int
+		Genres      func(childComplexity int) int
 		Title       func(childComplexity int) int
 		UID         func(childComplexity int) int
 	}
@@ -71,11 +71,17 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		DislikeGenre func(childComplexity int, input string) int
-		LikeGenre    func(childComplexity int, input string) int
-		Login        func(childComplexity int, input model.Login) int
-		LoginWithJwt func(childComplexity int) int
-		Register     func(childComplexity int, input model.Registration) int
+		AddBookToWtr       func(childComplexity int, input string) int
+		CancelAddBookToWtr func(childComplexity int, input string) int
+		CancelDislikeBook  func(childComplexity int, input string) int
+		CancelLoveBook     func(childComplexity int, input string) int
+		DislikeBook        func(childComplexity int, input string) int
+		DislikeGenre       func(childComplexity int, input string) int
+		LikeGenre          func(childComplexity int, input string) int
+		Login              func(childComplexity int, input model.Login) int
+		LoginWithJwt       func(childComplexity int) int
+		LoveBook           func(childComplexity int, input string) int
+		Register           func(childComplexity int, input model.Registration) int
 	}
 
 	Query struct {
@@ -107,6 +113,12 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
+	LoveBook(ctx context.Context, input string) (*model.Depiction, error)
+	DislikeBook(ctx context.Context, input string) (*model.Depiction, error)
+	AddBookToWtr(ctx context.Context, input string) (*model.Depiction, error)
+	CancelLoveBook(ctx context.Context, input string) (*model.Depiction, error)
+	CancelDislikeBook(ctx context.Context, input string) (*model.Depiction, error)
+	CancelAddBookToWtr(ctx context.Context, input string) (*model.Depiction, error)
 	LikeGenre(ctx context.Context, input string) (*model.Depiction, error)
 	DislikeGenre(ctx context.Context, input string) (*model.Depiction, error)
 	Register(ctx context.Context, input model.Registration) (*model.Depiction, error)
@@ -135,19 +147,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "Book.author":
-		if e.complexity.Book.Author == nil {
+	case "Book.authors":
+		if e.complexity.Book.Authors == nil {
 			break
 		}
 
-		return e.complexity.Book.Author(childComplexity), true
+		return e.complexity.Book.Authors(childComplexity), true
 
-	case "Book.coverURL":
-		if e.complexity.Book.CoverURL == nil {
+	case "Book.cover":
+		if e.complexity.Book.Cover == nil {
 			break
 		}
 
-		return e.complexity.Book.CoverURL(childComplexity), true
+		return e.complexity.Book.Cover(childComplexity), true
 
 	case "Book.description":
 		if e.complexity.Book.Description == nil {
@@ -156,12 +168,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Book.Description(childComplexity), true
 
-	case "Book.genre":
-		if e.complexity.Book.Genre == nil {
+	case "Book.genres":
+		if e.complexity.Book.Genres == nil {
 			break
 		}
 
-		return e.complexity.Book.Genre(childComplexity), true
+		return e.complexity.Book.Genres(childComplexity), true
 
 	case "Book.title":
 		if e.complexity.Book.Title == nil {
@@ -219,6 +231,66 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Genres.Genres(childComplexity), true
 
+	case "Mutation.addBookToWTR":
+		if e.complexity.Mutation.AddBookToWtr == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addBookToWTR_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddBookToWtr(childComplexity, args["input"].(string)), true
+
+	case "Mutation.cancelAddBookToWTR":
+		if e.complexity.Mutation.CancelAddBookToWtr == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_cancelAddBookToWTR_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CancelAddBookToWtr(childComplexity, args["input"].(string)), true
+
+	case "Mutation.cancelDislikeBook":
+		if e.complexity.Mutation.CancelDislikeBook == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_cancelDislikeBook_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CancelDislikeBook(childComplexity, args["input"].(string)), true
+
+	case "Mutation.cancelLoveBook":
+		if e.complexity.Mutation.CancelLoveBook == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_cancelLoveBook_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CancelLoveBook(childComplexity, args["input"].(string)), true
+
+	case "Mutation.dislikeBook":
+		if e.complexity.Mutation.DislikeBook == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_dislikeBook_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DislikeBook(childComplexity, args["input"].(string)), true
+
 	case "Mutation.dislikeGenre":
 		if e.complexity.Mutation.DislikeGenre == nil {
 			break
@@ -261,6 +333,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.LoginWithJwt(childComplexity), true
+
+	case "Mutation.loveBook":
+		if e.complexity.Mutation.LoveBook == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_loveBook_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.LoveBook(childComplexity, args["input"].(string)), true
 
 	case "Mutation.register":
 		if e.complexity.Mutation.Register == nil {
@@ -495,11 +579,11 @@ type User {
 
 type Book {
   uid: String!
-  author: String
+  authors: [String]
   title: String
   description: String
-  coverURL: String
-  genre: String
+  cover: Int
+  genres: [String]
 }
 
 type CategorizedBooks {
@@ -528,6 +612,12 @@ type Query {
 }
 
 type Mutation {
+  loveBook(input: String!): Depiction!
+  dislikeBook(input: String!): Depiction!
+  addBookToWTR(input: String!): Depiction!
+  cancelLoveBook(input: String!): Depiction!
+  cancelDislikeBook(input: String!): Depiction!
+  cancelAddBookToWTR(input: String!): Depiction!
   likeGenre(input: String!): Depiction!
   dislikeGenre(input: String!): Depiction!
   register(input: Registration!): Depiction!
@@ -540,6 +630,81 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_addBookToWTR_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_cancelAddBookToWTR_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_cancelDislikeBook_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_cancelLoveBook_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_dislikeBook_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_dislikeGenre_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -578,6 +743,21 @@ func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawAr
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNLogin2githubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐLogin(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_loveBook_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -719,7 +899,7 @@ func (ec *executionContext) _Book_uid(ctx context.Context, field graphql.Collect
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Book_author(ctx context.Context, field graphql.CollectedField, obj *model.Book) (ret graphql.Marshaler) {
+func (ec *executionContext) _Book_authors(ctx context.Context, field graphql.CollectedField, obj *model.Book) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -737,7 +917,7 @@ func (ec *executionContext) _Book_author(ctx context.Context, field graphql.Coll
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Author, nil
+		return obj.Authors, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -746,9 +926,9 @@ func (ec *executionContext) _Book_author(ctx context.Context, field graphql.Coll
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.([]*string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Book_title(ctx context.Context, field graphql.CollectedField, obj *model.Book) (ret graphql.Marshaler) {
@@ -815,7 +995,7 @@ func (ec *executionContext) _Book_description(ctx context.Context, field graphql
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Book_coverURL(ctx context.Context, field graphql.CollectedField, obj *model.Book) (ret graphql.Marshaler) {
+func (ec *executionContext) _Book_cover(ctx context.Context, field graphql.CollectedField, obj *model.Book) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -833,7 +1013,7 @@ func (ec *executionContext) _Book_coverURL(ctx context.Context, field graphql.Co
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.CoverURL, nil
+		return obj.Cover, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -842,12 +1022,12 @@ func (ec *executionContext) _Book_coverURL(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Book_genre(ctx context.Context, field graphql.CollectedField, obj *model.Book) (ret graphql.Marshaler) {
+func (ec *executionContext) _Book_genres(ctx context.Context, field graphql.CollectedField, obj *model.Book) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -865,7 +1045,7 @@ func (ec *executionContext) _Book_genre(ctx context.Context, field graphql.Colle
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Genre, nil
+		return obj.Genres, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -874,9 +1054,9 @@ func (ec *executionContext) _Book_genre(ctx context.Context, field graphql.Colle
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.([]*string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CategorizedBooks_genre(ctx context.Context, field graphql.CollectedField, obj *model.CategorizedBooks) (ret graphql.Marshaler) {
@@ -1081,6 +1261,258 @@ func (ec *executionContext) _Genres_genres(ctx context.Context, field graphql.Co
 	res := resTmp.([]*model.Genre)
 	fc.Result = res
 	return ec.marshalNGenre2ᚕᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐGenre(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_loveBook(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_loveBook_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().LoveBook(rctx, args["input"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Depiction)
+	fc.Result = res
+	return ec.marshalNDepiction2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐDepiction(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_dislikeBook(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_dislikeBook_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DislikeBook(rctx, args["input"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Depiction)
+	fc.Result = res
+	return ec.marshalNDepiction2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐDepiction(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_addBookToWTR(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_addBookToWTR_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddBookToWtr(rctx, args["input"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Depiction)
+	fc.Result = res
+	return ec.marshalNDepiction2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐDepiction(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_cancelLoveBook(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_cancelLoveBook_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CancelLoveBook(rctx, args["input"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Depiction)
+	fc.Result = res
+	return ec.marshalNDepiction2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐDepiction(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_cancelDislikeBook(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_cancelDislikeBook_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CancelDislikeBook(rctx, args["input"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Depiction)
+	fc.Result = res
+	return ec.marshalNDepiction2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐDepiction(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_cancelAddBookToWTR(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_cancelAddBookToWTR_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CancelAddBookToWtr(rctx, args["input"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Depiction)
+	fc.Result = res
+	return ec.marshalNDepiction2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐDepiction(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_likeGenre(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3109,16 +3541,16 @@ func (ec *executionContext) _Book(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "author":
-			out.Values[i] = ec._Book_author(ctx, field, obj)
+		case "authors":
+			out.Values[i] = ec._Book_authors(ctx, field, obj)
 		case "title":
 			out.Values[i] = ec._Book_title(ctx, field, obj)
 		case "description":
 			out.Values[i] = ec._Book_description(ctx, field, obj)
-		case "coverURL":
-			out.Values[i] = ec._Book_coverURL(ctx, field, obj)
-		case "genre":
-			out.Values[i] = ec._Book_genre(ctx, field, obj)
+		case "cover":
+			out.Values[i] = ec._Book_cover(ctx, field, obj)
+		case "genres":
+			out.Values[i] = ec._Book_genres(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3257,6 +3689,36 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
+		case "loveBook":
+			out.Values[i] = ec._Mutation_loveBook(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "dislikeBook":
+			out.Values[i] = ec._Mutation_dislikeBook(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "addBookToWTR":
+			out.Values[i] = ec._Mutation_addBookToWTR(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "cancelLoveBook":
+			out.Values[i] = ec._Mutation_cancelLoveBook(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "cancelDislikeBook":
+			out.Values[i] = ec._Mutation_cancelDislikeBook(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "cancelAddBookToWTR":
+			out.Values[i] = ec._Mutation_cancelAddBookToWTR(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "likeGenre":
 			out.Values[i] = ec._Mutation_likeGenre(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -4266,6 +4728,21 @@ func (ec *executionContext) marshalOGenre2ᚖgithubᚗcomᚋTinyRogueᚋlembook�
 		return graphql.Null
 	}
 	return ec._Genre(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalInt(*v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
