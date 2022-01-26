@@ -269,8 +269,8 @@ func (r *queryResolver) AuthorisedPing(ctx context.Context) (string, error) {
 	return "Pong", nil
 }
 
-func (r *queryResolver) Books(ctx context.Context, input *model.UserID) (*model.UsersBooks, error) {
-	log.Printf("Get books request.")
+func (r *queryResolver) CategorizedBooks(ctx context.Context, input *model.UserID) (*model.UsersBooks, error) {
+	log.Printf("Get books by category request.")
 	u := middleware.FindUserByCtx(ctx)
 	if u == nil {
 		log.Println("Attempt to access resource without privileges. Access Denied.")
@@ -281,6 +281,7 @@ func (r *queryResolver) Books(ctx context.Context, input *model.UserID) (*model.
 		log.Printf("Could not retrieve books due to: %v\n", err.Error())
 		return nil, err
 	}
+	log.Println("Get books by category request --> success")
 	return books, nil
 }
 

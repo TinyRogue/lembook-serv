@@ -10,13 +10,27 @@ func (s *Service) GetCategorizedBooks(ctx context.Context, userID *string) (*mod
 	if err != nil {
 		return nil, err
 	}
+	loved, disliked, wtr, err := getUserBookLists(ctx, s, userID)
+	if err != nil {
+		return nil, err
+	}
 
 	var usersBooks model.UsersBooks
-
 	for _, g := range *genres {
 		bookSlice, err := getBooksFrom(ctx, s, g, 0)
 		if err != nil {
 			return nil, err
+		}
+		for _, book := range bookSlice.Books {
+			if strInSlice(book.UID, loved) {
+				book.InList = LOVED
+			} else if strInSlice(book.UID, disliked) {
+				book.InList = DISLIKED
+			} else if strInSlice(book.UID, wtr) {
+				book.InList = WTR
+			} else {
+				book.InList = NONE
+			}
 		}
 		usersBooks.Slices = append(usersBooks.Slices, bookSlice)
 	}

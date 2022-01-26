@@ -12,12 +12,6 @@ input UserID {
   id: String!
 }
 
-#input WhatBook {
-#  author: String
-#  title: String
-#  genre: String
-#}
-
 type Depiction {
   res: String
 }
@@ -45,6 +39,7 @@ type Book {
   description: String
   cover: Int
   genres: [String]
+  inList: Int!
 }
 
 type CategorizedBooks {
@@ -68,7 +63,7 @@ type Genres {
 type Query {
   ping: String!
   authorisedPing: String!
-  books(input: UserID): UsersBooks!
+  categorizedBooks(input: UserID): UsersBooks!
   genres(input: UserID): Genres!
 }
 

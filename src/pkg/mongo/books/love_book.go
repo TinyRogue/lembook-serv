@@ -6,6 +6,9 @@ import (
 )
 
 func (s *Service) LoveTheBook(ctx context.Context, bookUID *string, userID *string) error {
+	if err := s.CancelAddBookToWTR(ctx, bookUID, userID); err != nil {
+		return err
+	}
 	if err := s.CancelDislikeTheBook(ctx, bookUID, userID); err != nil {
 		return err
 	}

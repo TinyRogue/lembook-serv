@@ -9,6 +9,7 @@ type Book struct {
 	Description *string   `json:"description"`
 	Cover       *int      `json:"cover"`
 	Genres      []*string `json:"genres"`
+	InList      int       `json:"inList"`
 }
 
 type CategorizedBooks struct {
