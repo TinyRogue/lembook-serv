@@ -65,6 +65,9 @@ type Query {
   authorisedPing: String!
   categorizedBooks(input: UserID): UsersBooks!
   genres(input: UserID): Genres!
+  lovedBooks: UsersBooks!
+  dislikedBooks: UsersBooks!
+  wtrBooks: UsersBooks!
 }
 
 type Mutation {

@@ -8,11 +8,17 @@ import (
 type Service interface {
 	GetCategorizedBooks(ctx context.Context, userID *string) (*model.UsersBooks, error)
 	GetGenres(ctx context.Context, userID *string) (*model.Genres, error)
+	GetLovedBooks(ctx context.Context, userID *string, page int64) (*model.UsersBooks, error)
+	GetDislikedBooks(ctx context.Context, userID *string, page int64) (*model.UsersBooks, error)
+	GetWTRBooks(ctx context.Context, userID *string, page int64) (*model.UsersBooks, error)
+
 	LikeGenre(ctx context.Context, genre *string, userID *string) error
 	DislikeGenre(ctx context.Context, genre *string, userID *string) error
+
 	LoveTheBook(ctx context.Context, bookUID *string, userID *string) error
 	DislikeTheBook(ctx context.Context, bookUID *string, userID *string) error
 	AddBookToWTR(ctx context.Context, bookUID *string, userID *string) error
+
 	CancelLoveTheBook(ctx context.Context, bookUID *string, userID *string) error
 	CancelDislikeTheBook(ctx context.Context, bookUID *string, userID *string) error
 	CancelAddBookToWTR(ctx context.Context, bookUID *string, userID *string) error

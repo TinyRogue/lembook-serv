@@ -300,6 +300,57 @@ func (r *queryResolver) Genres(ctx context.Context, input *model.UserID) (*model
 	return genres, nil
 }
 
+func (r *queryResolver) LovedBooks(ctx context.Context) (*model.UsersBooks, error) {
+	log.Println("Get loved book request.")
+	u := middleware.FindUserByCtx(ctx)
+	if u == nil {
+		log.Println("Attempt to access resource without privileges. Access Denied.")
+		return nil, fmt.Errorf("access denied")
+	}
+
+	books, err := r.BooksService.GetLovedBooks(ctx, &u.UID, 1)
+	if err != nil {
+		log.Printf("Could not retrieve books due to: %v\n", err.Error())
+		return nil, err
+	}
+	log.Println("Get loved list request --> success")
+	return books, nil
+}
+
+func (r *queryResolver) DislikedBooks(ctx context.Context) (*model.UsersBooks, error) {
+	log.Println("Get disliked books request.")
+	u := middleware.FindUserByCtx(ctx)
+	if u == nil {
+		log.Println("Attempt to access resource without privileges. Access Denied.")
+		return nil, fmt.Errorf("access denied")
+	}
+
+	books, err := r.BooksService.GetDislikedBooks(ctx, &u.UID, 1)
+	if err != nil {
+		log.Printf("Could not retrieve books due to: %v\n", err.Error())
+		return nil, err
+	}
+	log.Println("Get disliked list request --> success")
+	return books, nil
+}
+
+func (r *queryResolver) WtrBooks(ctx context.Context) (*model.UsersBooks, error) {
+	log.Println("Get Want-To-Read list request.")
+	u := middleware.FindUserByCtx(ctx)
+	if u == nil {
+		log.Println("Attempt to access resource without privileges. Access Denied.")
+		return nil, fmt.Errorf("access denied")
+	}
+
+	books, err := r.BooksService.GetWTRBooks(ctx, &u.UID, 1)
+	if err != nil {
+		log.Printf("Could not retrieve books due to: %v\n", err.Error())
+		return nil, err
+	}
+	log.Println("Get Want-To-Read list request --> success")
+	return books, nil
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
