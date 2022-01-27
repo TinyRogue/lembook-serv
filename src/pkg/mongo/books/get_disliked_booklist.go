@@ -40,6 +40,10 @@ func (s *Service) GetDislikedBooks(ctx context.Context, userID *string, page int
 		return nil, err
 	}
 
+	for _, book := range bookRes.Books {
+		book.InList = DISLIKED
+	}
+
 	var usersBooks model.UsersBooks
 	usersBooks.Slices = append(usersBooks.Slices, &bookRes)
 

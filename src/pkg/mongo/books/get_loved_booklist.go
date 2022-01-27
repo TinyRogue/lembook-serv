@@ -40,6 +40,10 @@ func (s *Service) GetLovedBooks(ctx context.Context, userID *string, page int64)
 		return nil, err
 	}
 
+	for _, book := range bookRes.Books {
+		book.InList = LOVED
+	}
+
 	var usersBooks model.UsersBooks
 	usersBooks.Slices = append(usersBooks.Slices, &bookRes)
 

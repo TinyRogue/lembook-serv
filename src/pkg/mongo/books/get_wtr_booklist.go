@@ -40,6 +40,10 @@ func (s *Service) GetWTRBooks(ctx context.Context, userID *string, page int64) (
 		return nil, err
 	}
 
+	for _, book := range bookRes.Books {
+		book.InList = WTR
+	}
+
 	var usersBooks model.UsersBooks
 	usersBooks.Slices = append(usersBooks.Slices, &bookRes)
 
