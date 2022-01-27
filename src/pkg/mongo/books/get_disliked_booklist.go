@@ -18,6 +18,10 @@ func (s *Service) GetDislikedBooks(ctx context.Context, userID *string, page int
 		booksUIDs = append(booksUIDs, *bUID)
 	}
 
+	if len(booksUIDs) == 0 {
+		return &model.UsersBooks{}, nil
+	}
+
 	filter := bson.M{"uid": bson.M{"$in": booksUIDs}}
 	var maxBooks int64 = 30
 	skipBooks := maxBooks * page
