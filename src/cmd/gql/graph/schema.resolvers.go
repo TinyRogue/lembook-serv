@@ -308,7 +308,7 @@ func (r *queryResolver) LovedBooks(ctx context.Context) (*model.UsersBooks, erro
 		return nil, fmt.Errorf("access denied")
 	}
 
-	books, err := r.BooksService.GetLovedBooks(ctx, &u.UID, 1)
+	books, err := r.BooksService.GetLovedBooks(ctx, &u.UID, 0)
 	if err != nil {
 		log.Printf("Could not retrieve books due to: %v\n", err.Error())
 		return nil, err
@@ -325,7 +325,7 @@ func (r *queryResolver) DislikedBooks(ctx context.Context) (*model.UsersBooks, e
 		return nil, fmt.Errorf("access denied")
 	}
 
-	books, err := r.BooksService.GetDislikedBooks(ctx, &u.UID, 1)
+	books, err := r.BooksService.GetDislikedBooks(ctx, &u.UID, 0)
 	if err != nil {
 		log.Printf("Could not retrieve books due to: %v\n", err.Error())
 		return nil, err
@@ -342,7 +342,7 @@ func (r *queryResolver) WtrBooks(ctx context.Context) (*model.UsersBooks, error)
 		return nil, fmt.Errorf("access denied")
 	}
 
-	books, err := r.BooksService.GetWTRBooks(ctx, &u.UID, 1)
+	books, err := r.BooksService.GetWTRBooks(ctx, &u.UID, 0)
 	if err != nil {
 		log.Printf("Could not retrieve books due to: %v\n", err.Error())
 		return nil, err

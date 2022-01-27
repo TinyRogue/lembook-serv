@@ -5,7 +5,6 @@ import (
 	"github.com/TinyRogue/lembook-serv/cmd/gql/graph/generated/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 )
 
 const (
@@ -27,13 +26,13 @@ func getAllGenres(ctx context.Context, s *Service) (*model.Genres, error) {
 	return &genres, nil
 }
 
-func getUserBookLists(ctx context.Context, s *Service, userUID *string) (loved *[]*string, disliked *[]*string, WTR *[]*string, err error) {
+func getUserBookLists(ctx context.Context, s *Service, userUID *string) (loved []*string, disliked []*string, WTR []*string, err error) {
 	filter := bson.M{"uid": *userUID}
 	var user model.User
 	if err := s.UsersCollection.FindOne(ctx, filter).Decode(&user); err != nil {
 		return nil, nil, nil, err
 	}
-	return &user.LikedBooks, &user.DislikedBooks, &user.WillingToRead, nil
+	return user.LikedBooks, user.DislikedBooks, user.WillingToRead, nil
 }
 
 func getUserGenres(ctx context.Context, s *Service, userUID *string) (*[]*string, error) {
@@ -65,13 +64,13 @@ func getBooksFrom(ctx context.Context, s *Service, genre *string, page int64) (*
 	}
 
 	if err := cursor.All(ctx, &categorizedBooks.Books); err != nil {
-		log.Println(err)
+		return nil, err
 	}
 	return &categorizedBooks, nil
 }
 
-func strInSlice(sought string, in *[]*string) bool {
-	for _, val := range *in {
+func strInSlice(sought string, in []*string) bool {
+	for _, val := range in {
 		if *val == sought {
 			return true
 		}

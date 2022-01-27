@@ -13,7 +13,12 @@ func (s *Service) GetLovedBooks(ctx context.Context, userID *string, page int64)
 		return nil, err
 	}
 
-	filter := bson.M{"uid.$in": loved}
+	var booksUIDs []string
+	for _, bUID := range loved {
+		booksUIDs = append(booksUIDs, *bUID)
+	}
+
+	filter := bson.M{"uid": bson.M{"$in": booksUIDs}}
 	var maxBooks int64 = 30
 	skipBooks := maxBooks * page
 	opts := options.FindOptions{
@@ -26,16 +31,17 @@ func (s *Service) GetLovedBooks(ctx context.Context, userID *string, page int64)
 		return nil, err
 	}
 
-	var categorizedBooks = model.CategorizedBooks{
+	var bookRes = model.CategorizedBooks{
 		Genre: "Te, które uwielbiasz",
 		Books: nil,
 	}
-	if err := cursor.All(ctx, &categorizedBooks.Books); err != nil {
+
+	if err := cursor.All(ctx, &bookRes.Books); err != nil {
 		return nil, err
 	}
 
 	var usersBooks model.UsersBooks
-	usersBooks.Slices = append(usersBooks.Slices, &categorizedBooks)
+	usersBooks.Slices = append(usersBooks.Slices, &bookRes)
 
 	return &usersBooks, nil
 }
