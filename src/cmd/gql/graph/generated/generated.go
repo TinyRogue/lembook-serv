@@ -92,6 +92,7 @@ type ComplexityRoot struct {
 		Genres           func(childComplexity int, input *model.UserID) int
 		LovedBooks       func(childComplexity int) int
 		Ping             func(childComplexity int) int
+		PredictedBooks   func(childComplexity int) int
 		WtrBooks         func(childComplexity int) int
 	}
 
@@ -137,6 +138,7 @@ type QueryResolver interface {
 	LovedBooks(ctx context.Context) (*model.UsersBooks, error)
 	DislikedBooks(ctx context.Context) (*model.UsersBooks, error)
 	WtrBooks(ctx context.Context) (*model.UsersBooks, error)
+	PredictedBooks(ctx context.Context) (*model.UsersBooks, error)
 }
 
 type executableSchema struct {
@@ -424,6 +426,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Ping(childComplexity), true
 
+	case "Query.predictedBooks":
+		if e.complexity.Query.PredictedBooks == nil {
+			break
+		}
+
+		return e.complexity.Query.PredictedBooks(childComplexity), true
+
 	case "Query.wtrBooks":
 		if e.complexity.Query.WtrBooks == nil {
 			break
@@ -642,6 +651,7 @@ type Query {
   lovedBooks: UsersBooks!
   dislikedBooks: UsersBooks!
   wtrBooks: UsersBooks!
+  predictedBooks: UsersBooks!
 }
 
 type Mutation {
@@ -2030,6 +2040,41 @@ func (ec *executionContext) _Query_wtrBooks(ctx context.Context, field graphql.C
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Query().WtrBooks(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.UsersBooks)
+	fc.Result = res
+	return ec.marshalNUsersBooks2ᚖgithubᚗcomᚋTinyRogueᚋlembookᚑservᚋcmdᚋgqlᚋgraphᚋgeneratedᚋmodelᚐUsersBooks(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_predictedBooks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().PredictedBooks(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4042,6 +4087,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_wtrBooks(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "predictedBooks":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_predictedBooks(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

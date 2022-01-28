@@ -68,6 +68,7 @@ type Query {
   lovedBooks: UsersBooks!
   dislikedBooks: UsersBooks!
   wtrBooks: UsersBooks!
+  predictedBooks: UsersBooks!
 }
 
 type Mutation {

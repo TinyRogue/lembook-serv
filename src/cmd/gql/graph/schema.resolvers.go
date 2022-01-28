@@ -351,6 +351,23 @@ func (r *queryResolver) WtrBooks(ctx context.Context) (*model.UsersBooks, error)
 	return books, nil
 }
 
+func (r *queryResolver) PredictedBooks(ctx context.Context) (*model.UsersBooks, error) {
+	log.Println("Get predicted list request.")
+	u := middleware.FindUserByCtx(ctx)
+	if u == nil {
+		log.Println("Attempt to access resource without privileges. Access Denied.")
+		return nil, fmt.Errorf("access denied")
+	}
+
+	books, err := r.BooksService.GetPredictedBooks(ctx, &u.UID, 20)
+	if err != nil {
+		log.Printf("Could not retrieve books due to: %v\n", err.Error())
+		return nil, err
+	}
+	log.Println("Get predicted list request --> success")
+	return books, nil
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

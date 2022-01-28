@@ -13,6 +13,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 func main() {
@@ -30,7 +31,20 @@ func main() {
 	defer service.Disconnect()
 
 	userService := user.Service{UsersCollection: service.DB.Collection(service.UsersCollectionName)}
-	booksService := books.Service{UsersCollection: service.DB.Collection(service.UsersCollectionName), BooksCollection: service.DB.Collection(service.BooksCollectionName), GenresCollection: service.DB.Collection(service.GenresCollectionName)}
+	booksService := books.Service{
+		UsersCollection:  service.DB.Collection(service.UsersCollectionName),
+		BooksCollection:  service.DB.Collection(service.BooksCollectionName),
+		GenresCollection: service.DB.Collection(service.GenresCollectionName),
+		C: &http.Client{
+			Timeout: 12 * time.Second,
+		},
+		PassKey:            os.Getenv("PASS_KEY"),
+		PredictServiceAddr: os.Getenv("ML_SERVICE"),
+	}
+
+	if booksService.PassKey == "" || booksService.PredictServiceAddr == "" {
+		log.Fatalln("Pass key, or predict service's address is not defined.")
+	}
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
 		UserService:  &userService,

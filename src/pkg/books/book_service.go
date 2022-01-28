@@ -11,6 +11,7 @@ type Service interface {
 	GetLovedBooks(ctx context.Context, userID *string, page int64) (*model.UsersBooks, error)
 	GetDislikedBooks(ctx context.Context, userID *string, page int64) (*model.UsersBooks, error)
 	GetWTRBooks(ctx context.Context, userID *string, page int64) (*model.UsersBooks, error)
+	GetPredictedBooks(ctx context.Context, userID *string, booksNum int64) (*model.UsersBooks, error)
 
 	LikeGenre(ctx context.Context, genre *string, userID *string) error
 	DislikeGenre(ctx context.Context, genre *string, userID *string) error
