@@ -12,8 +12,6 @@ import (
 
 func (s *Service) GetPredictedBooks(ctx context.Context, userID *string, booksNum int64) (*model.UsersBooks, error) {
 	query := fmt.Sprintf("%s/similar-books/%s?key=%s&books=%d", s.PredictServiceAddr, *userID, s.PassKey, booksNum)
-	//http://localhost:8081/similar-books/ieqmxvyj-sYcbeHfafqSB?key=ITS_THE_PASS_KEY_BRUH_NOT_SO_SAFE$2$1&books=109
-	//http://localhost:8081/similar-books/ieqmxvyj-sYcbeHfafqSB?key=ITS_THE_PASS_KEY_BRUH_NOT_SO_SAFE&books=20
 	log.Println(query)
 
 	resp, err := s.C.Get(query)
@@ -45,6 +43,22 @@ func (s *Service) GetPredictedBooks(ctx context.Context, userID *string, booksNu
 
 	if err := cursor.All(ctx, &bookRes.Books); err != nil {
 		return nil, err
+	}
+
+	loved, disliked, wtr, err := getUserBookLists(ctx, s, userID)
+	if err != nil {
+		return nil, err
+	}
+	for _, book := range bookRes.Books {
+		if strInSlice(book.UID, loved) {
+			book.InList = LOVED
+		} else if strInSlice(book.UID, disliked) {
+			book.InList = DISLIKED
+		} else if strInSlice(book.UID, wtr) {
+			book.InList = WTR
+		} else {
+			book.InList = NONE
+		}
 	}
 
 	var usersBooks model.UsersBooks

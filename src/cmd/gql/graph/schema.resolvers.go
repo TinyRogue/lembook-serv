@@ -359,7 +359,7 @@ func (r *queryResolver) PredictedBooks(ctx context.Context) (*model.UsersBooks, 
 		return nil, fmt.Errorf("access denied")
 	}
 
-	books, err := r.BooksService.GetPredictedBooks(ctx, &u.UID, 20)
+	books, err := r.BooksService.GetPredictedBooks(ctx, &u.UID, 28)
 	if err != nil {
 		log.Printf("Could not retrieve books due to: %v\n", err.Error())
 		return nil, err
