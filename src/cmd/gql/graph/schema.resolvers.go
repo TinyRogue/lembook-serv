@@ -238,7 +238,7 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (*model
 		Name:     "auth",
 		Value:    *token,
 		HttpOnly: true,
-		Domain:   "netlify.app",
+		Domain:   "lembook-serv-szncc.ondigitalocean.app",
 		Path:     "/",
 		Secure:   true,
 	})
