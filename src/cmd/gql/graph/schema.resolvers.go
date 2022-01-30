@@ -241,6 +241,7 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (*model
 		Domain:   "lembook-serv-szncc.ondigitalocean.app",
 		Path:     "/",
 		Secure:   true,
+		SameSite: http.SameSiteNoneMode,
 	})
 
 	return &model.Depiction{
