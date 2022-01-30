@@ -42,6 +42,7 @@ func main() {
 		PredictServiceAddr: os.Getenv("ML_SERVICE"),
 	}
 
+	log.Printf("AI microservice: %s\n", booksService.PredictServiceAddr)
 	if booksService.PassKey == "" || booksService.PredictServiceAddr == "" {
 		log.Fatalln("Pass key, or predict service's address is not defined.")
 	}
